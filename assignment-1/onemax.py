@@ -3,6 +3,9 @@ from __future__ import division
 from bitstring import BitArray
 import random
 from itertools import izip
+import matplotlib.pyplot as plt
+import time
+import numpy as np
 
 # From http://stackoverflow.com/questions/5389507/iterating-over-every-two-elements-in-a-list
 def pairwise(iterable):
@@ -30,7 +33,7 @@ def fitness_stats(population):
     worst = min(fit)
     mean = sum(fit)/len(fit)
     
-    return best, worst, mean
+    return [best, worst, mean]
     
 # Fitness total of all individuals    
 def roulette_size(population):
@@ -86,7 +89,7 @@ def select_parents(population):
     selected = []
     amount = len(population)
 
-    for i in xrange(int(amount/2)):
+    for i in xrange(amount):
         selected.append( select_from_cumulative_distribution(cumulative, population))
     
     return selected
@@ -115,7 +118,21 @@ def recombine(selected):
         
     
     return new_generation    
+   
+def plot(stats, string_length = 25):
+    best = []
+    mean = []
+    worst = []
+    for gen_stats in stats:
+        best.append(gen_stats[0])
+        mean.append(gen_stats[2])
+        worst.append(gen_stats[1])
     
+    plt.xlabel("nr generations")
+    plt.ylabel("score")
+    plt.axis([0, 100, 0, string_length])
+    plt.plot(best, 'b', mean, 'g', worst, 'r')
+    plt.savefig("plot" + str(string_length) + ".png")
     
 def ea(iterations=100,  string_length=25):
     # Initialization
@@ -123,29 +140,55 @@ def ea(iterations=100,  string_length=25):
     pop = create_population(population_size=100, string_length=string_length)
 
     mut_probability = 1/string_length    
-    
-    # Plot
     stats = []
     stats.append(fitness_stats(pop))
-    #  
-    
-    for t in xrange(iterations):
+    i = 0
+    while i < 100 and stats[i][0] != string_length:
         parents = select_parents(pop)
         pop = recombine(parents)
         
         for individual in pop:
             mutate(individual, mut_probability)
-        
-        print pop
+    
         stat = fitness_stats(pop)
-        print stat
         stats.append(stat)
+        i+=1
+    
+    #plot(stats, string_length)
+    #  
+#runs the ea ten times
+def testRun():
+    
+    durations = []
+    for i in range(10):
+        start = time.time()
+        ea()
+        end = time.time()
+        durations.append(end-start)
         
+    total = np.sum(durations)
+    mean = np.mean(durations)
+    std = np.std(durations)
+    
+    print mean, std
+    
+#    for t in xrange(iterations):
+#        parents = select_parents(pop)
+#        pop = recombine(parents)
+#        
+#        for individual in pop:
+#            mutate(individual, mut_probability)
+#        
+#        print pop
+#        stat = fitness_stats(pop)
+#        print stat
+#        stats.append(stat)
+#        
     
     
 if __name__ == '__main__':
-    
-    ea()
+    testRun()
+    #ea(string_length = 75)
     
     
     #pop = create_population(10, string_length=8)
