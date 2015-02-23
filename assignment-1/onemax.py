@@ -84,7 +84,8 @@ def select_parents(population, method="roulette"):
 def select_parents_roulette(population):
     size = roulette_size(population)
     
-    #[0.1, 0.3, 0.35, 0.5, 0.7, 1]
+    # Cumulative probability distribution
+    # Example: [0.1, 0.3, 0.35, 0.5, 0.7, 1.0]
     cumulative = []
     
     total = 0    
@@ -101,9 +102,12 @@ def select_parents_roulette(population):
     
     return selected
     
+# Randomly sample from cumulative distribution
+# (Used in roulette wheel selection)
 def select_from_cumulative_distribution(distribution, population):
     # Naïve O(N)
     r = random.random()
+    
 
     for i, prob in enumerate(distribution):
         if (prob > r):
@@ -111,7 +115,8 @@ def select_from_cumulative_distribution(distribution, population):
             
         
     return -1
-    
+
+# Tournament selection
 def select_parents_tournament(population, k=2):
     selected = []
     amount = len(population)
@@ -134,7 +139,7 @@ def select_parents_tournament(population, k=2):
     return selected
     
     
-    
+# Generate offspring for selected individuals
 def recombine(selected):
     new_generation = []
     
@@ -165,24 +170,32 @@ def plot(stats, iterations=100,string_length = 25, selection_mode="unspecified")
     plt.savefig("plot" + str(string_length) + selection_mode + ".png")
     
 def ea(iterations=100,  string_length=25, make_plot=True, selection_mode="roulette"):
-    # Initialization
-
+   
+   # Initialization
     pop = create_population(population_size=100, string_length=string_length)
 
-    mut_probability = 1/string_length    
+    mut_probability = 1/string_length   
+    
+    #List of best, mean and worst data
     stats = []
+    
     stats.append(fitness_stats(pop))
     
 
     for generation in xrange(iterations):   
         
-        #Optimum found?
+        #Optimum found? 
+        # Note that stats[t][0] contains the best individual's fitness
         if stats[generation][0] == string_length:
             break;
         
+        #Select parents for recombination
         parents = select_parents(pop, selection_mode)
+        
+        #Replace current generation by offspring
         pop = recombine(parents)
         
+        #Mutate
         for individual in pop:
             mutate(individual, mut_probability)
     
@@ -190,10 +203,8 @@ def ea(iterations=100,  string_length=25, make_plot=True, selection_mode="roulet
         stats.append(stat)
     
     
-    
     if make_plot:
         plot(stats, iterations, string_length, selection_mode)
-    #  
     
 #runs the ea ten times
 def testRun():
@@ -216,4 +227,4 @@ if __name__ == '__main__':
     #testRun()
     #ea(string_length = 75)
     
-    ea(string_length=76, selection_mode="roulette", iterations=50000)
+    ea(string_length=25, selection_mode="roulette", iterations=100)
