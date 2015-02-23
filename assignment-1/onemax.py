@@ -73,8 +73,15 @@ def mutate(individual, probability):
     individual.invert(bitflip_positions)
     return individual
     
+def select_parents(population, method="roulette"):
+    if method == "roulette":
+        return select_parents_roulette(population)
+    else:
+        return select_parents_tournament(population)
+    
+    
 # Roulette wheel selection
-def select_parents(population):
+def select_parents_roulette(population):
     size = roulette_size(population)
     
     #[0.1, 0.3, 0.35, 0.5, 0.7, 1]
@@ -105,6 +112,28 @@ def select_from_cumulative_distribution(distribution, population):
         
     return -1
     
+def select_parents_tournament(population, k=2):
+    selected = []
+    amount = len(population)
+    
+    #Not enough selected yet
+    while len(selected) < amount:
+        
+        highest = -1
+        winner = None
+        
+        # Run tournament of size k
+        for _ in xrange(k):
+            individual = random.choice(population)
+            if fitness(individual) > highest:
+                highest = fitness(individual)
+                winner = individual
+        
+        selected.append(winner)
+        
+    return selected
+    
+    
     
 def recombine(selected):
     new_generation = []
@@ -115,11 +144,9 @@ def recombine(selected):
         new_generation.append(kid1)
         new_generation.append(kid2)
     
-        
-    
     return new_generation    
    
-def plot(stats, string_length = 25):
+def plot(stats, iterations=100,string_length = 25, selection_mode="unspecified"):
     best = []
     mean = []
     worst = []
@@ -128,13 +155,16 @@ def plot(stats, string_length = 25):
         mean.append(gen_stats[2])
         worst.append(gen_stats[1])
     
-    plt.xlabel("nr generations")
-    plt.ylabel("score")
-    plt.axis([0, 100, 0, string_length])
-    plt.plot(best, 'b', mean, 'g', worst, 'r')
-    plt.savefig("plot" + str(string_length) + ".png")
     
-def ea(iterations=100,  string_length=25):
+    plt.title("L={0}, {1} selection".format(string_length, selection_mode))
+    
+    plt.xlabel("generation")
+    plt.ylabel("fitness")
+    plt.axis([0, iterations, 0, string_length])
+    plt.plot(best, 'b', mean, 'g', worst, 'r')
+    plt.savefig("plot" + str(string_length) + selection_mode + ".png")
+    
+def ea(iterations=100,  string_length=25, make_plot=True, selection_mode="roulette"):
     # Initialization
 
     pop = create_population(population_size=100, string_length=string_length)
@@ -142,9 +172,15 @@ def ea(iterations=100,  string_length=25):
     mut_probability = 1/string_length    
     stats = []
     stats.append(fitness_stats(pop))
-    i = 0
-    while i < 100 and stats[i][0] != string_length:
-        parents = select_parents(pop)
+    
+
+    for generation in xrange(iterations):   
+        
+        #Optimum found?
+        if stats[generation][0] == string_length:
+            break;
+        
+        parents = select_parents(pop, selection_mode)
         pop = recombine(parents)
         
         for individual in pop:
@@ -152,17 +188,20 @@ def ea(iterations=100,  string_length=25):
     
         stat = fitness_stats(pop)
         stats.append(stat)
-        i+=1
     
-    #plot(stats, string_length)
+    
+    
+    if make_plot:
+        plot(stats, iterations, string_length, selection_mode)
     #  
+    
 #runs the ea ten times
 def testRun():
     
     durations = []
     for i in range(10):
         start = time.time()
-        ea()
+        ea(make_plot=False)
         end = time.time()
         durations.append(end-start)
         
@@ -171,38 +210,10 @@ def testRun():
     std = np.std(durations)
     
     print mean, std
-    
-#    for t in xrange(iterations):
-#        parents = select_parents(pop)
-#        pop = recombine(parents)
-#        
-#        for individual in pop:
-#            mutate(individual, mut_probability)
-#        
-#        print pop
-#        stat = fitness_stats(pop)
-#        print stat
-#        stats.append(stat)
-#        
-    
+
     
 if __name__ == '__main__':
-    testRun()
+    #testRun()
     #ea(string_length = 75)
     
-    
-    #pop = create_population(10, string_length=8)
-    #for x in pop:
-    #    print x.bin   
-    
-    #print fitness(pop[0])
-    #print roulette_size(pop)
-    #print fitness_stats(pop)  
-
-    #p1 = BitArray('0b111111')
-    #p2 = BitArray('0b000000')
-    #print offspring(p1, p2)
-    
-    #print select_parents(pop)    
-    
-   # print mutate(p1, 0.25)
+    ea(string_length=76, selection_mode="roulette", iterations=50000)
