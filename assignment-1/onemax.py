@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+#Autors l.nies s4136748, g.zuidhof s4160703
+
 from __future__ import division
 from bitstring import BitArray
 import random
@@ -181,8 +183,8 @@ def ea(iterations=100,  string_length=25, make_plot=True, selection_mode="roulet
     
     stats.append(fitness_stats(pop))
     
-
-    for generation in xrange(iterations):   
+    
+    for generation in range(iterations):   
         
         #Optimum found? 
         # Note that stats[t][0] contains the best individual's fitness
@@ -201,30 +203,34 @@ def ea(iterations=100,  string_length=25, make_plot=True, selection_mode="roulet
     
         stat = fitness_stats(pop)
         stats.append(stat)
+        
+    return generation
     
     
     if make_plot:
         plot(stats, iterations, string_length, selection_mode)
     
 #runs the ea ten times
-def testRun():
+def testRun(string_length, selection_mode):
     
     durations = []
+    generations = []
     for i in range(10):
         start = time.time()
-        ea(make_plot=False)
+        generations.append(ea(string_length = string_length, make_plot=False, selection_mode = selection_mode))
         end = time.time()
         durations.append(end-start)
         
-    total = np.sum(durations)
     mean = np.mean(durations)
-    std = np.std(durations)
-    
+    std = np.std(durations)    
     print mean, std
+    meanGen = np.mean(generations)
+    stdGen = np.std(generations)
+    print meanGen, stdGen
 
     
 if __name__ == '__main__':
-    #testRun()
+    testRun(string_length = 75, selection_mode = "roulette")
     #ea(string_length = 75)
     
-    ea(string_length=25, selection_mode="roulette", iterations=100)
+    #ea(string_length=25, selection_mode="roulette", iterations=100)
