@@ -4,6 +4,7 @@ import numpy as np
 import operator
 import time
 import matplotlib.pyplot as plt
+import random
 
 def create_world():
     return np.ones((9,9,9))
@@ -78,7 +79,7 @@ def recycle_ants(ants, poss, common_memory, paths, filled_pos):
     return ants, poss, paths
     
 
-def make_step(ants, poss, world):
+def make_step(ants, poss, world, p_ignore_pheromones=0.05):
   
     cor = []
     for i in xrange(9*9*9):
@@ -86,11 +87,11 @@ def make_step(ants, poss, world):
         cor.append(i)  
   
     for a in xrange(len(ants)):
-      if ants[a] == None:
-          continue
-  
-  
-      probabilities = world * poss[a]
+      
+      if random.random() < p_ignore_pheromones:
+          probabilities = world * poss[a]
+      else:
+          probabilities = poss[a]
 
       weights = np.ravel(probabilities)
       #if a == 13:
@@ -144,7 +145,7 @@ def decay_pheromones(world, decay_rate = 0.01):
         world[x,y,z] = (1-decay_rate) * world[x,y,z]
     return world
   
-def pipeline(n = 200, decay_rate = 0.01):
+def pipeline(n = 200, decay_rate = 0.15):
     filled_pos = read_file()
     
     common_memory = create_memory(filled_pos)
@@ -160,7 +161,7 @@ def pipeline(n = 200, decay_rate = 0.01):
         
     
     while iteration < 5000:
-        #print world
+
         for i, ant in enumerate(ants):
             if not ant==(-1,-1,-1):
                 paths[i].append(ant)  
@@ -206,10 +207,14 @@ def path_to_sudoku(path):
     
     return sudoku
     
+<<<<<<< HEAD
 
 
 if __name__ == '__main__':
     filenames = ['']
+=======
+def bench():
+>>>>>>> 1f0ee8163324f9a3c1f48f3e28560f284332d70f
     comp_times = []
     max_decay = 0.5
     n = 4
@@ -224,6 +229,7 @@ if __name__ == '__main__':
         comp_times.append(float(average_time)/float(10))
                 
         
+<<<<<<< HEAD
     plt.xlabel("Decay Rate")
     plt.ylabel("Computation_time")
 #    plt.axis([0, max_decay, 0, max(comp_times)])
@@ -231,3 +237,20 @@ if __name__ == '__main__':
     plt.savefig(str(n) + "ants.png")
             
 #    pipeline()
+=======
+        plt.xlabel("Decay Rate")
+        plt.ylabel("Computation_time")
+        plt.axis([0, max_decay, 0, max(comp_times)])
+        plt.plot(np.arange(0.05, max_decay, 0.05), np.array(comp_times), 'b')
+        plt.savefig(str(n) + "ants.png")
+
+def ant_n_test():
+    comp_times = []
+    iterations = []
+    
+    
+
+if __name__ == '__main__':
+    #bench()
+    pipeline(2)
+>>>>>>> 1f0ee8163324f9a3c1f48f3e28560f284332d70f
