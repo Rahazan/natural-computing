@@ -209,17 +209,25 @@ def path_to_sudoku(path):
 
 
 if __name__ == '__main__':
+    filenames = ['']
     comp_times = []
     max_decay = 0.5
+    n = 4
+    comp_times = []
     for decay_rate in np.arange(0.05, max_decay, 0.05):
-        for n in np.arange(200, 10000, 200):
+        average_time = 0
+            
+        for i in range(10):
             timing, iterations = pipeline(n, decay_rate)
-            comp_times.append(timing)
+            average_time += timing
+                
+        comp_times.append(float(average_time)/float(10))
+                
         
-        plt.xlabel("Decay Rate")
-        plt.ylabel("Computation_time")
+    plt.xlabel("Decay Rate")
+    plt.ylabel("Computation_time")
 #    plt.axis([0, max_decay, 0, max(comp_times)])
-        plt.plot(np.arange(0.05, max_decay, 0.05), np.array(comp_times), 'b')
-        plt.savefig(str(n) + "ants.png")
+    plt.plot(np.arange(0.05, max_decay, 0.05), np.array(comp_times), 'b')
+    plt.savefig(str(n) + "ants.png")
             
 #    pipeline()
