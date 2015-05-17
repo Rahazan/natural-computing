@@ -4,7 +4,7 @@ public class main {
 
   public static void main(String argv[]) {
       try {
-          WindScenario ws = new WindScenario("C:/Users/Luc/workspace/Windfarm/Scenarios/obs_00.xml");
+          WindScenario ws = new WindScenario("./Scenarios/obs_00.xml");
           KusiakLayoutEvaluator wfle = new KusiakLayoutEvaluator();
           wfle.initialize(ws);
           GA algorithm = new GA(wfle);
