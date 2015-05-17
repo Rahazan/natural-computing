@@ -22,7 +22,9 @@ public class Test {
 			layout[i] = grid.get(i);
 		}
 		System.out.println("Evaluating");
-		System.out.println(wfle.evaluate(layout));
+		
+		
+		this.evaluate(layout);
 	}
 	
 	private void setupGrid()
@@ -48,11 +50,14 @@ public class Test {
 	}
 	
 	
-	private double evalutate(double[][] layout)
+	private double evaluate(double[][] layout)
 	{
-		
-		
-		return 0;
+		long time = System.currentTimeMillis();
+	    double fitness = wfle.evaluate(layout);
+        long timeTaken = System.currentTimeMillis() - time;
+        System.out.println("F: " + fitness + ", time taken: " + timeTaken);
+        
+        return fitness;
 	}
 
 }
