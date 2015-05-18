@@ -5,33 +5,95 @@ import java.util.List;
 import java.util.Random;
 
 import windfarmapi.WindFarmLayoutEvaluator;
+import windfarmapi.WindScenario;
 
 public class Test {
 
     private WindFarmLayoutEvaluator wfle;
+    private WindScenario scenario;
+    
     private ArrayList<double[]> particles;
-    private int nParticles = 500;
+    private ArrayList<double[]> velocities;
+    
+    private final int nParticles = 40;
+    private final double maxStartVelocity = 10.0;
+    
     
     private Random rand;
     
 	public Test(WindFarmLayoutEvaluator wfle) {
 		this.wfle = wfle;
+		this.scenario = wfle.getScenario();
 		this.particles = new ArrayList<double[]>();
+		this.velocities = new ArrayList<double[]>();
 		rand = new Random();
-		setupParticles(nParticles);
+		
 	}
 	
+	private void setupVelocities() {
+		
+		for(int i = 0; i < particles.size(); i++) {
+			double vx = rand.nextDouble() * maxStartVelocity * 2 - maxStartVelocity;
+			double vy = rand.nextDouble() * maxStartVelocity * 2 - maxStartVelocity;
+			
+			double[] vel = {vx,vy};
+			velocities.add(vel);
+		}
+	}
+
 	public void run(){
 		
+		System.out.println("Initializing particles") ;
+		setupParticles(nParticles);
+		System.out.println("Initializing velocities") ;
+		setupVelocities();
+		
+		
 		for(int i = 0; i < 100; i++) {
-			setupParticles(nParticles);
+			updatePositions();
 			double[][] layout = particlesToLayout(particles);
 			System.out.println("Evaluating " + i + "     " + layout.length) ;
 			this.evaluate(layout);
 		}
 		
-		
 	}
+	
+	private void updatePositions() {
+		for(int i = 0; i < particles.size(); i++) {
+			double[] particle = particles.get(i);
+			double[] v = velocities.get(i);
+			
+			//Todo maybe change the velocity
+			
+			particle[0] = particle[0]+v[0];
+			particle[1] = particle[1]+v[1];
+			
+			if (particle[0] >= scenario.width) {
+				particle[0] = scenario.width - (particle[0] - scenario.width);
+				v[0] = -v[0];
+			}
+			
+			if (particle[1] >= scenario.height) {
+				particle[1] = scenario.height - (particle[1] - scenario.height);
+				v[1] = -v[1];
+			}
+			
+			if (particle[0] < scenario.width) {
+				particle[0] = -particle[0];
+				v[0] = -v[0];
+			}
+			
+			if (particle[1] < scenario.height) {
+				particle[1] = -particle[1];
+				v[1] = -v[1];
+			}
+			
+		} 
+	}
+	
+	
+	
+	
 	
 	/**
 	 * Converts list of particles to layout[][] for evaluation.
