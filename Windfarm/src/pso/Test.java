@@ -96,40 +96,56 @@ public class Test {
 	
 	
 	private void setupWalls() {
-		double minDistance = 8.001 * scenario.R;
+		double minDistance = 8 * scenario.R;
 		
-		Body wallS = new Body();
+		Body wallNorth = new Body();
 		Rectangle rectS = new Rectangle(scenario.width, 100);
-		wallS.addFixture(rectS);
-		wallS.translate(scenario.width*0.5,-50);
-		//world.addBody(wallS);
+		wallNorth.addFixture(rectS);
+		wallNorth.translate(scenario.width*0.5,-50-minDistance);
+		world.addBody(wallNorth);
 		
-		Body wallN = new Body();
+		Body wallSouth = new Body();
 		Rectangle rectN = new Rectangle(scenario.width, 100);
-		wallN.addFixture(rectN);
+		wallSouth.addFixture(rectN);
+		wallSouth.translate(scenario.width*0.5,scenario.height+50+minDistance);
+		world.addBody(wallSouth);
 		
 		Body wallE = new Body();
-		Rectangle rectE = new Rectangle(scenario.height, 100);
+		Rectangle rectE = new Rectangle(100, scenario.height);
 		wallE.addFixture(rectE);
+		wallE.translate(-50-minDistance,scenario.height*0.5);
+		world.addBody(wallE);
 		
 		Body wallW = new Body();
-		Rectangle rectW = new Rectangle(scenario.height, 100);
+		Rectangle rectW = new Rectangle(100, scenario.height);
 		wallW.addFixture(rectW);
+		wallW.translate(scenario.width+50+minDistance,scenario.height*0.5);
+		world.addBody(wallW);
 		
 	}
 	
 	private void setupObstacles() {
-		for (int o=0; o<wfle.getScenario().obstacles.length; o++) {
-    		double[] obs = wfle.getScenario().obstacles[o];
+		double minDistance = 8.002 * scenario.R;
+		double duzend = 1000;
+		
+		for (int o=0; o<scenario.obstacles.length; o++) {
+    		double[] obs = scenario.obstacles[o];
 
-    			Body bod = new Body();
-    			double width = obs[2]-obs[0];
-    			double height = obs[3]-obs[1];
-    			
-    			Rectangle rect = new Rectangle(width, height);
-    			bod.addFixture(rect);
-    			bod.translate(obs[0]+0.5*width,obs[1]+0.5*height);
-    			world.addBody(bod);
+			double[] obsClone = obs.clone();
+			if (obsClone[0] < 1.0) obsClone[0] = -duzend;
+			if (obsClone[1] < 1.0) obsClone[1] = -duzend;
+			if (obsClone[2] > scenario.width-1) obsClone[2] = scenario.width+duzend;
+			if (obsClone[3] > scenario.height-1) obsClone[3] = scenario.height+duzend;
+			
+			
+			Body bod = new Body();
+			double width = obsClone[2]-obsClone[0]-minDistance*2;
+			double height = obsClone[3]-obsClone[1]-minDistance*2;
+
+			Rectangle rect = new Rectangle(width, height);
+			bod.addFixture(rect);
+			bod.translate(obsClone[0]+0.5*width+minDistance ,obsClone[1]+0.5*height+minDistance );
+			world.addBody(bod);
     	}
 	}
 	
