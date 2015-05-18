@@ -5,27 +5,30 @@ import java.util.List;
 import java.util.Random;
 
 import windfarmapi.WindFarmLayoutEvaluator;
+import windfarmapi.WindScenario;
 
 public class Test {
 
     private WindFarmLayoutEvaluator wfle;
     private ArrayList<double[]> particles;
     private int nParticles = 500;
-    
+    private GUI gui;
     private Random rand;
     
-	public Test(WindFarmLayoutEvaluator wfle) {
+	public Test(WindFarmLayoutEvaluator wfle, WindScenario ws) {
 		this.wfle = wfle;
 		this.particles = new ArrayList<double[]>();
 		rand = new Random();
 		setupParticles(nParticles);
+		gui = new GUI(ws);
 	}
 	
 	public void run(){
 		
-		for(int i = 0; i < 100; i++) {
+		for(int i = 0; i < 10; i++) {
 			setupParticles(nParticles);
 			double[][] layout = particlesToLayout(particles);
+			gui.update(layout);
 			System.out.println("Evaluating " + i + "     " + layout.length) ;
 			this.evaluate(layout);
 		}
