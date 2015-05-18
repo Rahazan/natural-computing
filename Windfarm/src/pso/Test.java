@@ -6,6 +6,8 @@ import java.util.Random;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.World;
 import org.dyn4j.geometry.Circle;
+import org.dyn4j.geometry.Mass.Type;
+import org.dyn4j.geometry.Rectangle;
 import org.dyn4j.geometry.Vector2;
 
 import windfarmapi.WindFarmLayoutEvaluator;
@@ -21,8 +23,8 @@ public class Test {
     private GUI gui;
 
     private ArrayList<Vector2> velocities;
-    private final int nParticles = 400;
-    private final double maxStartVelocity = 1000.0;
+    private final int nParticles = 200;
+    private final double maxStartVelocity = 2000.0;
     private Random rand;
     
     private ArrayList<Particle> particles;
@@ -60,13 +62,14 @@ public class Test {
 		setupParticles(nParticles);
 		System.out.println("Initializing velocities") ;
 		setupVelocities();
-		
+		setupWalls();
+		setupObstacles();
 		
 		for (int i = 0; i < particles.size(); i++) {
 			particles.get(i).setVelocity(velocities.get(i));
 		}
 		
-		for(int i = 0; i < 10000; i++) {
+		for(int i = 0; i < 100000; i++) {
 			this.world.update(1000.0);
 			double[][] layout = particlesToLayout(particles);
 			gui.update(layout);
@@ -89,6 +92,45 @@ public class Test {
 			layout[j][1] = particles.get(j).getTransform().getTranslationY();
 		}
 		return layout;
+	}
+	
+	
+	private void setupWalls() {
+		double minDistance = 8.001 * scenario.R;
+		
+		Body wallS = new Body();
+		Rectangle rectS = new Rectangle(scenario.width, 100);
+		wallS.addFixture(rectS);
+		wallS.translate(scenario.width*0.5,-50);
+		//world.addBody(wallS);
+		
+		Body wallN = new Body();
+		Rectangle rectN = new Rectangle(scenario.width, 100);
+		wallN.addFixture(rectN);
+		
+		Body wallE = new Body();
+		Rectangle rectE = new Rectangle(scenario.height, 100);
+		wallE.addFixture(rectE);
+		
+		Body wallW = new Body();
+		Rectangle rectW = new Rectangle(scenario.height, 100);
+		wallW.addFixture(rectW);
+		
+	}
+	
+	private void setupObstacles() {
+		for (int o=0; o<wfle.getScenario().obstacles.length; o++) {
+    		double[] obs = wfle.getScenario().obstacles[o];
+
+    			Body bod = new Body();
+    			double width = obs[2]-obs[0];
+    			double height = obs[3]-obs[1];
+    			
+    			Rectangle rect = new Rectangle(width, height);
+    			bod.addFixture(rect);
+    			bod.translate(obs[0]+0.5*width,obs[1]+0.5*height);
+    			world.addBody(bod);
+    	}
 	}
 	
 	
