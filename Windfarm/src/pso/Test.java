@@ -1,53 +1,111 @@
 package pso;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 import windfarmapi.WindFarmLayoutEvaluator;
 
 public class Test {
 
     private WindFarmLayoutEvaluator wfle;
-    private ArrayList<double[]> grid;
+    private ArrayList<double[]> particles;
+    private int nParticles = 500;
+    
+    private Random rand;
     
 	public Test(WindFarmLayoutEvaluator wfle) {
 		this.wfle = wfle;
-		this.grid = new ArrayList<double[]>();
-		setupGrid();
+		this.particles = new ArrayList<double[]>();
+		rand = new Random();
+		setupParticles(nParticles);
 	}
 	
 	public void run(){
-		double[][] layout = new double[grid.size()][2];
 		
-		for(int i = 0 ; i < grid.size() ; i++){
-			layout[i] = grid.get(i);
+		for(int i = 0; i < 100; i++) {
+			setupParticles(nParticles);
+			double[][] layout = particlesToLayout(particles);
+			System.out.println("Evaluating " + i + "     " + layout.length) ;
+			this.evaluate(layout);
 		}
-		System.out.println("Evaluating");
 		
 		
-		this.evaluate(layout);
 	}
 	
-	private void setupGrid()
-	{
-		double interval = 8.001 * wfle.getScenario().R;
-
-	    for (double x=0.0; x<wfle.getScenario().width; x+=interval) {
-	    	for (double y=0.0; y<wfle.getScenario().height; y+=interval) {
-	    		boolean valid = true;
-	            	for (int o=0; o<wfle.getScenario().obstacles.length; o++) {
+	/**
+	 * Converts list of particles to layout[][] for evaluation.
+	 */
+	private double[][] particlesToLayout(ArrayList<double[]> parts) {
+		double[][] layout = new double[particles.size()][2];
+		
+		for(int j = 0 ; j < particles.size() ; j++){
+			layout[j] = particles.get(j);
+		}
+		return layout;
+	}
+	
+	
+	private void setupParticles(int n){
+		double minDistance = 8.001 * wfle.getScenario().R;
+		particles.clear();
+		for (int i=0; i<n; i++) {
+			
+		    	double[] party = null;
+		    	boolean valid = false;
+		    	
+		    	
+		    	int nFailures = 0;
+		    	while(!valid) {
+		    		valid = true;
+		    		double x = rand.nextDouble()*wfle.getScenario().width;
+			    	double y = rand.nextDouble()*wfle.getScenario().height;
+		    		party = new double[]{x,y};
+		    		
+		    		//Check whether particle is too close to other particles
+		    		for (double[] otherParticle: particles) {
+		    			if(dist(party, otherParticle) < minDistance) {
+		    				valid = false;
+		    				break;
+		    			}
+		    		}
+		    		
+		    		for (int o=0; o<wfle.getScenario().obstacles.length; o++) {
 	            		double[] obs = wfle.getScenario().obstacles[o];
 	            		if (x>obs[0] && y>obs[1] && x<obs[2] && y<obs[3]) {
 	            			valid = false;
+	            			break;
 	            		}
 	            	}
-
-	            	if (valid) {
-	            		double[] point = {x, y};
-	            		grid.add(point);
-	            	}
-	          	}
-	      }
+		    		
+		    		if (valid) {
+		    			particles.add(party);
+		    			nFailures++;
+		    		}
+		    		else {
+		    			nFailures++;
+		    		}
+		    		
+		    		if (nFailures > 200) {
+				    	break;
+				    }
+				    	
+		    	}
+		    	
+		    	if (nFailures > 200) {
+			    	System.out.println(nFailures + " failures in randomply placing new particle,\nGiving up after " + i + " particles");
+			    	break;
+			    }
+	    	
+		}
 	}
+	
+
+	private double dist(double[] a, double[] b) {
+		return Math.sqrt(  Math.pow(a[0]-b[0],2.0) +  Math.pow(a[1]-b[1],2.0)   );
+	}
+	
+	
 	
 	
 	private double evaluate(double[][] layout)
