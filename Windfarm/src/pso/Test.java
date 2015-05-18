@@ -21,7 +21,7 @@ public class Test {
     private GUI gui;
 
     private ArrayList<Vector2> velocities;
-    private final int nParticles = 40;
+    private final int nParticles = 400;
     private final double maxStartVelocity = 1000.0;
     private Random rand;
     
@@ -62,14 +62,13 @@ public class Test {
 		
 		
 		for (int i = 0; i < particles.size(); i++) {
-			particles.get(i).applyForce(velocities.get(i));
+			particles.get(i).setVelocity(velocities.get(i));
 		}
 		
 		for(int i = 0; i < 10000; i++) {
-			this.world.update(1.0);
+			this.world.update(1000.0);
 			double[][] layout = particlesToLayout(particles);
 			gui.update(layout);
-			System.out.println("Update!");
 			System.out.println("Evaluating " + i + "     " + layout.length) ;
 			this.evaluate(layout);
 		}
@@ -111,6 +110,7 @@ public class Test {
 			    	Circle circle = new Circle(8.00* scenario.R);
 	    			party.addFixture(circle);
 	    			party.translate(x,y);
+	    			party.setMass();
 			    	
 		    		//Check whether particle is too close to other particles
 		    		for (Body otherParticle: particles) {
