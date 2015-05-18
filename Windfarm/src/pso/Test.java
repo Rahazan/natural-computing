@@ -37,6 +37,7 @@ public class Test {
 		
 		// Physics engine
 		world = new World();
+		world.setGravity(new Vector2(0.0,0.0));
 		particles = new ArrayList<Particle>();
 		
 		
@@ -70,7 +71,7 @@ public class Test {
 			double[][] layout = particlesToLayout(particles);
 			gui.update(layout);
 			System.out.println("Evaluating " + i + "     " + layout.length) ;
-			this.evaluate(layout);
+			//this.evaluate(layout);
 		}
 		
 	}
