@@ -56,3 +56,7 @@ docs/_build/
 target/
 *.spyderproject
 .spyderworkspace
+
+# Eclipse ingores
+.metadata/
+*.db

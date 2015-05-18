@@ -18,7 +18,8 @@ public class GUI extends JPanel{
 	private static double factor = 15; 
 	private JFrame mainframe;
 	private double[][] layout;
-	private static int radius = 8;
+	private int radius;
+	private int radiusS = 5;
 	private double[][] obstacles;
 	private static int borderWidth = 10;
 	
@@ -29,6 +30,7 @@ public class GUI extends JPanel{
 		this.width = (int) (scenario.width/factor) + borderWidth; 
 		this.height = (int) (scenario.height/factor) + borderWidth;
 		this.obstacles = scenario.obstacles;
+		radius = (int)((scenario.R*8)/factor);
 		super.setPreferredSize(new Dimension(width,height));
 		super.setBackground(Color.WHITE);
 		mainframe = new JFrame();
@@ -75,7 +77,8 @@ public class GUI extends JPanel{
 				
 				int x = (int)(windmill[0]/factor + borderWidth/2);
 				int y = (int)(windmill[1]/factor + borderWidth/2);
-				g2.fillOval(x-radius, y-radius, radius, radius);
+				g2.drawOval(x-radius, y-radius, 2*radius, 2*radius);
+				g2.fillOval(x-radiusS, y-radiusS, radiusS*2, radiusS*2);
 			}
 		}
 	}
