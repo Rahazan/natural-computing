@@ -3,6 +3,8 @@ package windfarmapi;
 import java.util.ArrayList;
 import java.util.Random;
 
+import pso.GUI;
+
 public class GA {
 
     WindFarmLayoutEvaluator wfle;
@@ -15,6 +17,8 @@ public class GA {
     double cross_rate;
     ArrayList<double[]> grid;
 
+    private GUI gui;
+    
     public GA(WindFarmLayoutEvaluator evaluator) {
         wfle = evaluator;
         rand = new Random();
@@ -23,6 +27,7 @@ public class GA {
         mut_rate = 0.05;
         cross_rate = 0.40;
         grid = new ArrayList<double[]>();
+        gui = new GUI(wfle.getScenario());
     }
 
     private void evaluate() {
@@ -45,6 +50,8 @@ public class GA {
                 }
             }
 
+            
+            gui.update(layout);
 	    wfle.evaluate(layout);
             double coe = wfle.getEnergyCost();
 //            double[] fitnesses = wfle.getTurbineFitnesses();
