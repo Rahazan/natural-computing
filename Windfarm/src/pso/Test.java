@@ -22,7 +22,7 @@ public class Test {
 
     private ArrayList<Vector2> velocities;
     private final int nParticles = 40;
-    private final double maxStartVelocity = 10.0;
+    private final double maxStartVelocity = 1000.0;
     private Random rand;
     
     private ArrayList<Particle> particles;
@@ -60,8 +60,13 @@ public class Test {
 		System.out.println("Initializing velocities") ;
 		setupVelocities();
 		
+		
+		for (int i = 0; i < particles.size(); i++) {
+			particles.get(i).applyForce(velocities.get(i));
+		}
+		
 		for(int i = 0; i < 10000; i++) {
-			updatePositions();
+			this.world.update(1.0);
 			double[][] layout = particlesToLayout(particles);
 			gui.update(layout);
 			System.out.println("Update!");
@@ -70,12 +75,6 @@ public class Test {
 		}
 		
 	}
-	
-	private void updatePositions() {
-		
-	}
-	
-	
 	
 	
 	
