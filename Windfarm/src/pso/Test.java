@@ -96,7 +96,7 @@ public class Test {
 	
 	
 	private void setupWalls() {
-		double minDistance = 8 * scenario.R;
+		double minDistance = 4 * scenario.R;
 		
 		Body wallNorth = new Body();
 		Rectangle rectS = new Rectangle(scenario.width, 100);
@@ -125,7 +125,7 @@ public class Test {
 	}
 	
 	private void setupObstacles() {
-		double minDistance = 8.002 * scenario.R;
+		double minDistance = 4.0000 * scenario.R;
 		double duzend = 1000;
 		
 		for (int o=0; o<scenario.obstacles.length; o++) {
@@ -151,7 +151,7 @@ public class Test {
 	
 	
 	private void setupParticles(int n){
-		double minDistance = 8.001 * scenario.R;
+		double minDistance = 4.0001 * scenario.R;
 		particles.clear();
 		for (int i=0; i<n; i++) {
 			
@@ -166,7 +166,7 @@ public class Test {
 			    	double y = rand.nextDouble()*wfle.getScenario().height;
 			    	
 			    	party = new Particle();
-			    	Circle circle = new Circle(8.00* scenario.R);
+			    	Circle circle = new Circle(minDistance);
 	    			party.addFixture(circle);
 	    			party.translate(x,y);
 	    			party.setMass();
