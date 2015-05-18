@@ -62,10 +62,10 @@ public class GUI extends JPanel{
 		{
 			for(double[] obs : obstacles)
 			{
-				int xmin = (int) (obs[0]/factor)+borderWidth;
-				int ymin = (int) (obs[1]/factor)+borderWidth;
-				int xmax = (int) (obs[2]/factor)+borderWidth;
-				int ymax= (int) (obs[3]/factor)+borderWidth;
+				int xmin = (int) (obs[0]/factor)+borderWidth/2;
+				int ymin = (int) (obs[1]/factor)+borderWidth/2;
+				int xmax = (int) (obs[2]/factor)+borderWidth/2;
+				int ymax= (int) (obs[3]/factor)+borderWidth/2;
 				g2.fillRect(xmin, ymin, xmax-xmin, ymax-ymin);
 			}
 		}
