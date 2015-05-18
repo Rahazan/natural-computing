@@ -23,7 +23,7 @@ public class Test {
     private GUI gui;
 
     private ArrayList<Vector2> velocities;
-    private final int nParticles = 200;
+    private final int nParticles = 500;
     private final double maxStartVelocity = 2000.0;
     private Random rand;
     
