@@ -1,7 +1,10 @@
 package pso;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -15,20 +18,23 @@ public class GUI extends JPanel{
 	private static double factor = 15; 
 	private JFrame mainframe;
 	private double[][] layout;
-	private static int radius = 8; 
+	private static int radius = 8;
+	private double[][] obstacles;
+	private static int borderWidth = 10;
 	
 	
 	public GUI(WindScenario scenario)
 	{
 		super();
-		this.width = (int) (scenario.width/factor); 
-		this.height = (int) (scenario.height/factor);
-		super.setSize(width, height);
+		this.width = (int) (scenario.width/factor) + borderWidth; 
+		this.height = (int) (scenario.height/factor) + borderWidth;
+		this.obstacles = scenario.obstacles;
+		super.setPreferredSize(new Dimension(width,height));
 		super.setBackground(Color.WHITE);
 		mainframe = new JFrame();
 		mainframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		mainframe.setBounds(0, 0, width, height);
 		mainframe.getContentPane().add(this);
+		mainframe.pack();
 		mainframe.setVisible(true);
 		
 	}
@@ -41,15 +47,37 @@ public class GUI extends JPanel{
 	
 	@Override
 	public void paint(Graphics g){
-		super.paintComponent(g);
+		Graphics2D g2 = (Graphics2D)g;
+		super.paintComponent(g2);
+		//draw border
+		g2.setColor(Color.black);
+		g2.setStroke(new BasicStroke(borderWidth));
+		g2.drawRect(0, 0, width, height);
+		
+		g2.setStroke(new BasicStroke(1));
+		
+		if(obstacles != null)
+		{
+			for(double[] obs : obstacles)
+			{
+				int xmin = (int) (obs[0]/factor)+borderWidth;
+				int ymin = (int) (obs[1]/factor)+borderWidth;
+				int xmax = (int) (obs[2]/factor)+borderWidth;
+				int ymax= (int) (obs[3]/factor)+borderWidth;
+				g2.fillRect(xmin, ymin, xmax-xmin, ymax-ymin);
+			}
+		}
 		if(layout!= null)
+		{
+			g2.setColor(Color.red);
 			for(double[] windmill : layout)
 			{
-				g.setColor(Color.red);
-				int x = (int)(windmill[0]/factor);
-				int y = (int)(windmill[1]/factor);
-				g.fillOval(x-radius, y-radius, radius, radius);
+				
+				int x = (int)(windmill[0]/factor + borderWidth/2);
+				int y = (int)(windmill[1]/factor + borderWidth/2);
+				g2.fillOval(x-radius, y-radius, radius, radius);
 			}
+		}
 	}
 	
 
