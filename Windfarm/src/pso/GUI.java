@@ -30,7 +30,7 @@ public class GUI extends JPanel{
 		this.width = (int) (scenario.width/factor) + borderWidth; 
 		this.height = (int) (scenario.height/factor) + borderWidth;
 		this.obstacles = scenario.obstacles;
-		radius = (int)((scenario.R*8)/factor);
+		radius = (int)((scenario.R*8/2)/factor);
 		super.setPreferredSize(new Dimension(width,height));
 		super.setBackground(Color.WHITE);
 		mainframe = new JFrame();
