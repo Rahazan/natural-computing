@@ -75,7 +75,7 @@ public class Test {
 			double[][] layout = particlesToLayout(particles);
 			gui.update(layout);
 			System.out.println("Evaluating " + i + "     " + layout.length) ;
-			this.evaluate(layout);
+			//this.evaluate(layout);
 		}
 		
 	}
@@ -171,6 +171,8 @@ public class Test {
 	    			party.addFixture(circle);
 	    			party.translate(x,y);
 	    			party.setMass();
+	    			party.getFixtures().get(0).setRestitution(1.0);
+	    			party.getFixtures().get(0).setFriction(0.0);
 			    	
 		    		//Check whether particle is too close to other particles
 		    		for (Body otherParticle: particles) {
