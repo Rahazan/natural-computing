@@ -126,7 +126,7 @@ public class Test {
 	}
 	
 	private void setupObstacles() {
-		double minDistance = 4.0000 * scenario.R;
+		double minDistance = 4.0001 * scenario.R;
 		double duzend = 1000;
 		
 		for (int o=0; o<scenario.obstacles.length; o++) {
@@ -152,7 +152,7 @@ public class Test {
 	
 	
 	private void setupParticles(int n){
-		double minDistance = 4.0001 * scenario.R;
+		double minDistance = 4.0111 * scenario.R;
 		particles.clear();
 		for (int i=0; i<n; i++) {
 			
