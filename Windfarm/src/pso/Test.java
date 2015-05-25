@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import org.dyn4j.dynamics.Body;
+import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.dynamics.World;
 import org.dyn4j.geometry.Circle;
 import org.dyn4j.geometry.Mass.Type;
@@ -171,8 +172,10 @@ public class Test {
 	    			party.addFixture(circle);
 	    			party.translate(x,y);
 	    			party.setMass();
-	    			party.getFixtures().get(0).setRestitution(1.0);
-	    			party.getFixtures().get(0).setFriction(0.0);
+	    			BodyFixture fixture = party.getFixtures().get(0);
+	    			fixture.setRestitution(1.0);
+	    			fixture.setFriction(0.0);
+	    			
 			    	
 		    		//Check whether particle is too close to other particles
 		    		for (Body otherParticle: particles) {
