@@ -1,5 +1,7 @@
 package pso;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -10,6 +12,14 @@ import org.dyn4j.geometry.Circle;
 import org.dyn4j.geometry.Mass.Type;
 import org.dyn4j.geometry.Rectangle;
 import org.dyn4j.geometry.Vector2;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartUtilities;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 
 import windfarmapi.WindFarmLayoutEvaluator;
 import windfarmapi.WindScenario;
@@ -24,8 +34,8 @@ public class Test {
     private GUI gui;
 
     private ArrayList<Vector2> velocities;
-    private final int nParticles = 500;
-    private final double maxStartVelocity = 2000.0;
+    private final int nParticles = 300;
+    private final double maxStartVelocity = 20000.0;
     private Random rand;
     
     private ArrayList<Particle> particles;
@@ -71,12 +81,48 @@ public class Test {
 			particles.get(i).setVelocity(velocities.get(i));
 		}
 		
+		XYSeries series = new XYSeries("XYGraph");
+		
 		for(int i = 0; i < 50000; i++) {
-			this.world.update(1000.0);
+			this.world.update(800.0);
+			this.world.update(800.0);
+			this.world.update(800.0);
 			double[][] layout = particlesToLayout(particles);
 			gui.update(layout);
 			System.out.println("Evaluating " + i + "     " + layout.length) ;
-			//this.evaluate(layout);
+			double score = this.evaluate(layout);
+			if (score != Double.MAX_VALUE) { //Valid score will always be under 1, this is to check whether its max or not
+					
+				System.out.println("score!: " + score);
+				series.add(i,score*1000);
+			}
+			
+			
+			if (i % 10 == 0) {
+				// Add the series to your data set
+				XYSeriesCollection dataset = new XYSeriesCollection();
+				dataset.addSeries(series);
+				// Generate the graph
+				JFreeChart chart = ChartFactory.createXYLineChart(
+					"", // Title
+					"time", // x-axis Label
+					"fitness*1000", // y-axis Label
+					dataset, // Dataset
+					PlotOrientation.VERTICAL, // Plot Orientation
+					true, // Show Legend
+					true, // Use tooltips
+					false // Configure chart to generate URLs?
+				);
+				XYPlot xyPlot = (XYPlot) chart.getPlot();
+				((NumberAxis)xyPlot.getRangeAxis()).setAutoRangeIncludesZero(false);
+				
+				
+				try {
+					ChartUtilities.saveChartAsJPEG(new File("chart.jpg"), chart, 500, 300);
+				} catch (IOException e) {
+					System.err.println("Problem occurred creating chart.");
+				}
+			}
 		}
 		
 	}
@@ -153,7 +199,7 @@ public class Test {
 	
 	
 	private void setupParticles(int n){
-		double minDistance = 4.01 * scenario.R;
+		double minDistance = 4.02 * scenario.R;
 		particles.clear();
 		for (int i=0; i<n; i++) {
 			
