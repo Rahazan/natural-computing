@@ -152,7 +152,7 @@ public class Test {
 	
 	
 	private void setupParticles(int n){
-		double minDistance = 4.0111 * scenario.R;
+		double minDistance = 4.01 * scenario.R;
 		particles.clear();
 		for (int i=0; i<n; i++) {
 			
@@ -174,7 +174,7 @@ public class Test {
 			    	
 		    		//Check whether particle is too close to other particles
 		    		for (Body otherParticle: particles) {
-		    			if(otherParticle.getTransform().getTranslation().distance(party.getTransform().getTranslation()) < minDistance) {
+		    			if(otherParticle.getTransform().getTranslation().distance(party.getTransform().getTranslation()) < minDistance*2) {
 		    				valid = false;
 		    				break;
 		    			}
