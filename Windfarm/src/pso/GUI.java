@@ -33,7 +33,7 @@ public class GUI extends JPanel{
 		radius = (int)((scenario.R*8/2)/factor);
 		super.setPreferredSize(new Dimension(width,height));
 		super.setBackground(Color.WHITE);
-		mainframe = new JFrame();
+		mainframe = new JFrame("Windfarm visualization");
 		mainframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		mainframe.getContentPane().add(this);
 		mainframe.pack();

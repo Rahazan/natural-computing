@@ -91,7 +91,9 @@ public class Test {
 			double[][] layout = particlesToLayout(particles);
 			gui.update(layout);
 			System.out.println("Evaluating " + i + "     " + layout.length) ;
+			/*
 			double score = this.evaluate(layout);
+			
 			if (score != Double.MAX_VALUE) { //Valid score?
 					
 				series.add(i,score*1000);
@@ -122,7 +124,7 @@ public class Test {
 				} catch (IOException e) {
 					System.err.println("Problem occurred creating chart.");
 				}
-			}
+			}*/
 		}
 		
 	}
