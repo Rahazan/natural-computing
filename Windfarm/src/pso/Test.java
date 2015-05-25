@@ -84,6 +84,7 @@ public class Test {
 		XYSeries series = new XYSeries("XYGraph");
 		
 		for(int i = 0; i < 50000; i++) {
+			//Multiple physics updates to be able to resolve more complex collisions
 			this.world.update(800.0);
 			this.world.update(800.0);
 			this.world.update(800.0);
@@ -91,14 +92,13 @@ public class Test {
 			gui.update(layout);
 			System.out.println("Evaluating " + i + "     " + layout.length) ;
 			double score = this.evaluate(layout);
-			if (score != Double.MAX_VALUE) { //Valid score will always be under 1, this is to check whether its max or not
+			if (score != Double.MAX_VALUE) { //Valid score?
 					
-				System.out.println("score!: " + score);
 				series.add(i,score*1000);
 			}
 			
 			
-			if (i % 10 == 0) {
+			if (i % 10 == 0) { //Plot every 10 iterations
 				// Add the series to your data set
 				XYSeriesCollection dataset = new XYSeriesCollection();
 				dataset.addSeries(series);
@@ -199,7 +199,7 @@ public class Test {
 	
 	
 	private void setupParticles(int n){
-		double minDistance = 4.02 * scenario.R;
+		double minDistance = 4.03 * scenario.R;
 		particles.clear();
 		for (int i=0; i<n; i++) {
 			
