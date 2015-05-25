@@ -23,7 +23,7 @@ public class Test {
     private GUI gui;
 
     private ArrayList<Vector2> velocities;
-    private final int nParticles = 200;
+    private final int nParticles = 400;
     private final double maxStartVelocity = 2000.0;
     private Random rand;
     
@@ -41,6 +41,7 @@ public class Test {
 		world = new World();
 		world.setGravity(new Vector2(0.0,0.0));
 		particles = new ArrayList<Particle>();
+		
 		
 		
 	}
@@ -69,12 +70,12 @@ public class Test {
 			particles.get(i).setVelocity(velocities.get(i));
 		}
 		
-		for(int i = 0; i < 100000; i++) {
+		for(int i = 0; i < 50000; i++) {
 			this.world.update(1000.0);
 			double[][] layout = particlesToLayout(particles);
 			gui.update(layout);
 			System.out.println("Evaluating " + i + "     " + layout.length) ;
-			//this.evaluate(layout);
+			this.evaluate(layout);
 		}
 		
 	}
