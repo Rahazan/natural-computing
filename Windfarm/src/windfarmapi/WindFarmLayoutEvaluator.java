@@ -1,5 +1,9 @@
 package windfarmapi;
 
+import java.util.ArrayList;
+
+import pso.Particle;
+
 /**
  * The class WindFarmLayoutEvaluator is an interface to easily exchange the
  * evaluation function of the wind farm layouts. The evaluator has to be initialized
@@ -29,7 +33,10 @@ public abstract class WindFarmLayoutEvaluator {
 	 * @return the cost of energy (positive) 
 	 * and max_double if the layout is invalid
 	 */
+	
 	public abstract double evaluate(double[][] layout);
+	
+	public abstract double evaluate(ArrayList<Particle> layout);
 
 	/**
 	 * 2014 WIND FARM LAYOUT OPTIMIZATION EVALUATION FUNCTION
@@ -41,6 +48,8 @@ public abstract class WindFarmLayoutEvaluator {
 	 * or a negative value is the layout is invalid
 	 */
 	public abstract double evaluate_2014(double[][] layout);
+	
+	public abstract double evaluate_2014(ArrayList<Particle> layout);
 
 	/**
 	 * Returns the energy outputs per wind turbine and per direction of the last
@@ -95,4 +104,6 @@ public abstract class WindFarmLayoutEvaluator {
 	}
 	
 	public abstract WindScenario getScenario();
+
+
 }

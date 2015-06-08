@@ -9,9 +9,7 @@ public class Main {
         WindScenario ws;
 		try {
 			ws = new WindScenario("Scenarios/obs_00.xml");		
-			KusiakLayoutEvaluator wfle = new KusiakLayoutEvaluator();
-		    wfle.initialize(ws);
-		    Test test = new Test(wfle, ws);
+		    Test test = new Test(ws);
 		    test.run();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

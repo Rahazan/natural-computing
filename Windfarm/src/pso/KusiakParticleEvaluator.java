@@ -1,15 +1,13 @@
-package windfarmapi;
+package pso;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.StringTokenizer;
 
-import pso.Particle;
+import windfarmapi.WindFarmLayoutEvaluator;
+import windfarmapi.WindScenario;
 
-public class KusiakLayoutEvaluator extends WindFarmLayoutEvaluator {
+public class KusiakParticleEvaluator extends WindFarmLayoutEvaluator {
 	protected double tspe[][];
-	protected double tpositions[][];
+	protected ArrayList<Particle> tpositions;
 	protected double energyCapture;
 	protected double wakeFreeRatio;
 	protected double energyCost;
@@ -27,7 +25,7 @@ public class KusiakLayoutEvaluator extends WindFarmLayoutEvaluator {
 	}
 
         @Override
-	public double evaluate(double[][] layout) {
+	public double evaluate(ArrayList<Particle> layout) {
 	    final double ct  = 750000;
 	    final double cs  = 8000000;
 	    final double m   = 30;
@@ -37,7 +35,7 @@ public class KusiakLayoutEvaluator extends WindFarmLayoutEvaluator {
 
 	    double wfr = evaluate_2014(layout);
 	    if (wfr<=0) return Double.MAX_VALUE; 
-	    int n = layout.length;
+	    int n = layout.size();
 	    
 	    energyCost = ((ct*n+cs*Math.floor(n/m)*(0.666667+0.333333*Math.exp(-0.00174*n*n))+com*n)/
 		    ((1-Math.pow(1+r, -y))/r)/(8760.0*scenario.wakeFreeEnergy*wfr*n))+0.1/n;
@@ -48,21 +46,16 @@ public class KusiakLayoutEvaluator extends WindFarmLayoutEvaluator {
 	}
 
 	@Override
-	public double evaluate_2014(double[][] layout) {
+	public double evaluate_2014(ArrayList<Particle> layout) {
 		WindFarmLayoutEvaluator.nEvals++;
 		// Copying the layout
-		tpositions=new double[layout.length][layout[0].length];
-		for (int i=0; i<layout.length; i++) {
-			for (int j=0; j<layout[i].length; j++) {
-				tpositions[i][j]=layout[i][j];
-			}
-		}
+		tpositions=layout;
 
 		energyCapture=0;
 		if (checkConstraint()) {
-			tspe=new double[scenario.thetas.length][tpositions.length];
+			tspe=new double[scenario.thetas.length][tpositions.size()];
 			// wind resource per turbine => stored temporaly in tspe
-			for (int turb=0; turb<tpositions.length; turb++) {
+			for (int turb=0; turb<tpositions.size(); turb++) {
 				// for each turbine
 				for (int thets=0; thets<scenario.thetas.length; thets++) {
 					// for each direction
@@ -86,7 +79,7 @@ public class KusiakLayoutEvaluator extends WindFarmLayoutEvaluator {
 					energyCapture+=totalPow;
 				}
 			}
-			wakeFreeRatio=energyCapture/(scenario.wakeFreeEnergy*tpositions.length);
+			wakeFreeRatio=energyCapture/(scenario.wakeFreeEnergy*tpositions.size());
 			return wakeFreeRatio;
 		} else {
 			energyCapture=0;
@@ -115,25 +108,25 @@ public class KusiakLayoutEvaluator extends WindFarmLayoutEvaluator {
 	}
 
 	protected boolean checkConstraint() {
-	    for (int i=0; i<tpositions.length; i++) {
+	    for (int i=0; i<tpositions.size(); i++) {
 		// checking obstacle constraints
 		for (int j=0; j<scenario.obstacles.length; j++) {
-		    if (tpositions[i][0] > scenario.obstacles[j][0] &&
-			tpositions[i][0] < scenario.obstacles[j][2] &&
-			tpositions[i][1] > scenario.obstacles[j][1] &&
-			tpositions[i][1] < scenario.obstacles[j][3]) {
-			System.out.println("Turbine "+i+"("+tpositions[i][0]+", "+tpositions[i][1]+") is in the obstacle "+j+" ["+scenario.obstacles[j][0]+", "+scenario.obstacles[j][1]+", "+scenario.obstacles[j][2]+", "+scenario.obstacles[j][3]+"].");
+		    if (tpositions.get(i).getX() > scenario.obstacles[j][0] &&
+			tpositions.get(i).getX() < scenario.obstacles[j][2] &&
+			tpositions.get(i).getY() > scenario.obstacles[j][1] &&
+			tpositions.get(i).getY() < scenario.obstacles[j][3]) {
+			System.out.println("Turbine "+i+"("+tpositions.get(i).getX()+", "+tpositions.get(i).getY()+") is in the obstacle "+j+" ["+scenario.obstacles[j][0]+", "+scenario.obstacles[j][1]+", "+scenario.obstacles[j][2]+", "+scenario.obstacles[j][3]+"].");
 			return false;
 		    }
 		}
 		// checking the security constraints
-	        for (int j=0; j<tpositions.length; j++) {
+	        for (int j=0; j<tpositions.size(); j++) {
 	            if (i!=j) {
 	                // calculate the sqared distance between both turb
-	                double dist=(tpositions[i][0]-tpositions[j][0])*(tpositions[i][0]-tpositions[j][0])+
-	                (tpositions[i][1]-tpositions[j][1])*(tpositions[i][1]-tpositions[j][1]);
+	                double dist=(tpositions.get(i).getX()-tpositions.get(j).getX())*(tpositions.get(i).getX()-tpositions.get(j).getX())+
+	                (tpositions.get(i).getY()-tpositions.get(j).getY())*(tpositions.get(i).getY()-tpositions.get(j).getY());
 	                if (dist<scenario.minDist) {
-			    System.out.println("Security distance contraint violated between turbines "+i+" ("+tpositions[i][0]+", "+tpositions[i][1]+") and "+j+" ("+tpositions[j][0]+", "+tpositions[j][1]+"): "+Math.sqrt(dist)+" > "+Math.sqrt(scenario.minDist));
+			    System.out.println("Security distance contraint violated between turbines "+i+" ("+tpositions.get(i).getX()+", "+tpositions.get(i).getY()+") and "+j+" ("+tpositions.get(j).getX()+", "+tpositions.get(j).getY()+"): "+Math.sqrt(dist)+" > "+Math.sqrt(scenario.minDist));
 	                    return false;
 	                }
 	            }
@@ -143,13 +136,13 @@ public class KusiakLayoutEvaluator extends WindFarmLayoutEvaluator {
 	}
 
 	protected double calculateWakeTurbine(int turb, int thetIndex) {
-	    double x=tpositions[turb][0];
-	    double y=tpositions[turb][1];
+	    double x=tpositions.get(turb).getX();
+	    double y=tpositions.get(turb).getY();
 	    double velDef=0;
-	    for (int oturb=0; oturb<tpositions.length; oturb++) {
+	    for (int oturb=0; oturb<tpositions.size(); oturb++) {
 	        if (oturb!=turb) {
-	            double xo=tpositions[oturb][0];
-	            double yo=tpositions[oturb][1];
+	            double xo=tpositions.get(oturb).getX();
+	            double yo=tpositions.get(oturb).getY();
 	            double beta=calculateBeta(x, y, xo, yo, thetIndex);
 	            if (beta<scenario.atan_k) {
 	                double dij=calculateProjectedDistance(x, y, xo, yo, thetIndex);
@@ -211,13 +204,13 @@ public class KusiakLayoutEvaluator extends WindFarmLayoutEvaluator {
 	}
 
 	@Override
-	public double evaluate(ArrayList<Particle> layout) {
+	public double evaluate_2014(double[][] layout) {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public double evaluate_2014(ArrayList<Particle> layout) {
+	public double evaluate(double[][] layout) {
 		// TODO Auto-generated method stub
 		return 0;
 	}

@@ -125,20 +125,20 @@ public class WindScenario {
         minDist=64.0*R*R;
     }
 
-    double getCosMidThetas(int thetIndex) {
+    public double getCosMidThetas(int thetIndex) {
     	return coSinMidThetas[thetIndex][0];
     }
     
-    double getSinMidThetas(int thetIndex) {
+    public double getSinMidThetas(int thetIndex) {
     	return coSinMidThetas[thetIndex][1];
     }
 
     
-	double getWblcdfVints(double c, int vintIndex, int ksIndex) {
+    public double getWblcdfVints(double c, int vintIndex, int ksIndex) {
 		return wblcdfValues[(int)((c-cMin)/wblcdfAccuracy)*(vints.length+1)*ks.length+vintIndex*ks.length+ksIndex];
 	}
 
-	double getWblcdfVrated(double c, int ksIndex) {
+    public double getWblcdfVrated(double c, int ksIndex) {
 		return wblcdfValues[(int)((c-cMin)/wblcdfAccuracy)*(vints.length+1)*ks.length+vints.length*ks.length+ksIndex];
 
 	}

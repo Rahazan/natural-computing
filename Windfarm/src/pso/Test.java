@@ -26,7 +26,7 @@ import windfarmapi.WindScenario;
 
 public class Test {
 
-    private WindFarmLayoutEvaluator wfle;
+    private WindFarmLayoutEvaluator pwfle;
     private WindScenario scenario;
     
     private World world;
@@ -34,16 +34,17 @@ public class Test {
     private GUI gui;
 
     private ArrayList<Vector2> velocities;
-    private final int nParticles = 300;
+    private final int nParticles = 100;
     private final double maxStartVelocity = 20000.0;
     private Random rand;
     
     private ArrayList<Particle> particles;
     
     
-	public Test(WindFarmLayoutEvaluator wfle, WindScenario ws) {
-		this.wfle = wfle;
-		this.scenario = wfle.getScenario();
+	public Test(WindScenario ws) {
+		this.scenario = ws;
+		this.pwfle = new KusiakParticleEvaluator();
+		this.pwfle.initialize(ws);
 		this.velocities = new ArrayList<Vector2>();
 		rand = new Random();
 		gui = new GUI(ws);
@@ -91,6 +92,9 @@ public class Test {
 			double[][] layout = particlesToLayout(particles);
 			gui.update(layout);
 			System.out.println("Evaluating " + i + "     " + layout.length) ;
+			double score = this.evaluate(particles);
+	
+			
 			/*
 			double score = this.evaluate(layout);
 			
@@ -136,6 +140,7 @@ public class Test {
 	 */
 	private double[][] particlesToLayout(ArrayList<Particle> parts) {
 		double[][] layout = new double[particles.size()][2];
+		Particle part = particles.get(0);
 		
 		for(int j = 0 ; j < particles.size() ; j++){
 			layout[j][0] = particles.get(j).getTransform().getTranslationX();
@@ -212,8 +217,8 @@ public class Test {
 		    	int nFailures = 0;
 		    	while(!valid) {
 		    		valid = true;
-		    		double x = rand.nextDouble()*wfle.getScenario().width;
-			    	double y = rand.nextDouble()*wfle.getScenario().height;
+		    		double x = rand.nextDouble()*pwfle.getScenario().width;
+			    	double y = rand.nextDouble()*pwfle.getScenario().height;
 			    	
 			    	party = new Particle();
 			    	Circle circle = new Circle(minDistance);
@@ -233,8 +238,8 @@ public class Test {
 		    			}
 		    		}
 		    		
-		    		for (int o=0; o<wfle.getScenario().obstacles.length; o++) {
-	            		double[] obs = wfle.getScenario().obstacles[o];
+		    		for (int o=0; o<pwfle.getScenario().obstacles.length; o++) {
+	            		double[] obs = pwfle.getScenario().obstacles[o];
 	            		if (x>obs[0] && y>obs[1] && x<obs[2] && y<obs[3]) {
 	            			valid = false;
 	            			break;
@@ -263,15 +268,16 @@ public class Test {
 		}
 	}
 	
-	private double evaluate(double[][] layout)
+	private double evaluate(ArrayList<Particle> layout)
 	{
 		long time = System.currentTimeMillis();
-	    double fitness = wfle.evaluate(layout);
+	    double fitness = pwfle.evaluate(layout);
         long timeTaken = System.currentTimeMillis() - time;
         System.out.println("F: " + fitness + ", time taken: " + timeTaken);
-        wfle.evaluate(layout);
         
         return fitness;
 	}
+	
+
 
 }
