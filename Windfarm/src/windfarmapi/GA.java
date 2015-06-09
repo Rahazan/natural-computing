@@ -51,7 +51,7 @@ public class GA {
             }
 
             
-            gui.update(layout);
+//            gui.update(layout);
 	    wfle.evaluate(layout);
             double coe = wfle.getEnergyCost();
 //            double[] fitnesses = wfle.getTurbineFitnesses();

@@ -9,6 +9,7 @@ import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.dynamics.World;
 import org.dyn4j.geometry.Circle;
+import org.dyn4j.geometry.Mass;
 import org.dyn4j.geometry.Mass.Type;
 import org.dyn4j.geometry.Rectangle;
 import org.dyn4j.geometry.Vector2;
@@ -34,7 +35,7 @@ public class Test {
     private GUI gui;
 
     private ArrayList<Vector2> velocities;
-    private final int nParticles = 100;
+    private final int nParticles = 200;
     private final double maxStartVelocity = 20000.0;
     private Random rand;
     
@@ -55,43 +56,70 @@ public class Test {
 		particles = new ArrayList<Particle>();
 		
 		
-		
 	}
 	
 	private void setupVelocities() {
 		
 		for(int i = 0; i < particles.size(); i++) {
-			double vx = rand.nextDouble() * maxStartVelocity * 2 - maxStartVelocity;
-			double vy = rand.nextDouble() * maxStartVelocity * 2 - maxStartVelocity;
+//			double vx = rand.nextDouble() * maxStartVelocity * 2 - maxStartVelocity;
+//			double vy = rand.nextDouble() * maxStartVelocity * 2 - maxStartVelocity;
 			
-			Vector2 vel = new Vector2(vx,vy);
+			Vector2 vel = new Vector2(0,0);
 			velocities.add(vel);
+		}
+	}
+	
+	/**
+	 * Might not be needed
+	 */
+	private void setupMass(){
+		
+		double mass = 10;
+		for(Particle party : particles){
+			party.setMass(new Mass(new Vector2(), mass, 0.0));
+			mass+=100;
+//			Vector2.create(magnitude, direction)
 		}
 	}
 
 	public void run(){
 		
 		System.out.println("Initializing particles") ;
-		setupParticles(nParticles);
-		System.out.println("Initializing velocities") ;
+		particles = findStartLayout(nParticles ,1);
 		setupVelocities();
+		setupMass();
+		
+		for(Particle party: particles)
+			world.addBody(party);
+		
+		System.out.println("Initializing velocities") ;
+		
 		setupWalls();
 		setupObstacles();
 		
 		for (int i = 0; i < particles.size(); i++) {
-			particles.get(i).setVelocity(velocities.get(i));
+			particles.get(i).setLinearVelocity(velocities.get(i));
 		}
+
+		System.out.println("Starting swarm with size: " + particles.size());
 		
-		XYSeries series = new XYSeries("XYGraph");
+//		XYSeries series = new XYSeries("XYGraph");
 		
 		for(int i = 0; i < 50000; i++) {
 			//Multiple physics updates to be able to resolve more complex collisions
 			this.world.update(800.0);
+//			try {
+//				Thread.sleep(1);
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 			this.world.update(800.0);
 			this.world.update(800.0);
-			double[][] layout = particlesToLayout(particles);
-			gui.update(layout);
-			System.out.println("Evaluating " + i + "     " + layout.length) ;
+
+			gui.update(particles);
+			updateVelocities();
+//			System.out.println("Evaluating " + i + "     " + layout.length) ;
 			double score = this.evaluate(particles);
 	
 			
@@ -134,17 +162,51 @@ public class Test {
 	}
 	
 	
+	private void updateVelocities(){
+		for(int i = 0 ; i < particles.size() ; i++)
+			for(int j = 0 ; j < particles.size() ; j++)
+			{
+				if(i!=j)
+				{
+					Particle part1 = particles.get(i);
+					Particle part2 = particles.get(j);
+					double distance = part1.distanceTo(part2);
+					part1.applyForce(part1.getPosition().difference(part2.getPosition()).negate()); //particles attract eachother
+					
+					
+				}
+				
+			}
+	}
+	
+	private ArrayList<Particle> findStartLayout(int n, int n_iter){
+		double min = Double.MAX_VALUE;
+		ArrayList<Particle> best = null;
+		
+		for(int i = 0 ; i < n_iter ; i++){
+			ArrayList<Particle> current = setupParticles(n);
+			double currentVal = evaluate(current);
+			n+=5;
+			if(currentVal <= min){
+				best = current;
+				min = currentVal;
+				gui.update(particles);
+			}
+		}
+		
+		return best;
+	}
 	
 	/**
 	 * Converts list of particles to layout[][] for evaluation.
 	 */
 	private double[][] particlesToLayout(ArrayList<Particle> parts) {
-		double[][] layout = new double[particles.size()][2];
-		Particle part = particles.get(0);
+		double[][] layout = new double[parts.size()][2];
+		Particle part = parts.get(0);
 		
-		for(int j = 0 ; j < particles.size() ; j++){
-			layout[j][0] = particles.get(j).getTransform().getTranslationX();
-			layout[j][1] = particles.get(j).getTransform().getTranslationY();
+		for(int j = 0 ; j < parts.size() ; j++){
+			layout[j][0] = parts.get(j).getTransform().getTranslationX();
+			layout[j][1] = parts.get(j).getTransform().getTranslationY();
 		}
 		return layout;
 	}
@@ -205,9 +267,9 @@ public class Test {
 	}
 	
 	
-	private void setupParticles(int n){
+	private ArrayList<Particle> setupParticles(int n){
 		double minDistance = 4.03 * scenario.R;
-		particles.clear();
+		ArrayList<Particle> layout = new ArrayList<Particle>();
 		for (int i=0; i<n; i++) {
 			
 		    	Particle party = null;
@@ -231,7 +293,7 @@ public class Test {
 	    			
 			    	
 		    		//Check whether particle is too close to other particles
-		    		for (Body otherParticle: particles) {
+		    		for (Body otherParticle: layout) {
 		    			if(otherParticle.getTransform().getTranslation().distance(party.getTransform().getTranslation()) < minDistance*2) {
 		    				valid = false;
 		    				break;
@@ -247,8 +309,8 @@ public class Test {
 	            	}
 		    		
 		    		if (valid) {
-		    			world.addBody(party);
-		    			particles.add(party);
+//		    			world.addBody(party);
+		    			layout.add(party);
 		    		}
 		    		else {
 		    			nFailures++;
@@ -266,6 +328,7 @@ public class Test {
 			    }
 	    	
 		}
+		return layout;
 	}
 	
 	private double evaluate(ArrayList<Particle> layout)

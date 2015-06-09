@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.util.ArrayList;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -17,7 +18,7 @@ public class GUI extends JPanel{
 	private int height;
 	private static double factor = 15; 
 	private JFrame mainframe;
-	private double[][] layout;
+	private ArrayList<Particle> layout;
 	private int radius;
 	private int radiusS = 5;
 	private double[][] obstacles;
@@ -41,7 +42,7 @@ public class GUI extends JPanel{
 		
 	}
 	
-	public void update(double[][] layout){
+	public void update(ArrayList<Particle> layout){
 		this.layout = layout;
 		repaint();
 	}
@@ -71,14 +72,21 @@ public class GUI extends JPanel{
 		}
 		if(layout!= null)
 		{
-			g2.setColor(Color.red);
-			for(double[] windmill : layout)
+			double highest = 0;
+			double lowest = Double.MAX_VALUE;
+			double score;
+			for(Particle windmill : layout)
 			{
+				score = windmill.getScore();
 				
-				int x = (int)(windmill[0]/factor + borderWidth/2);
-				int y = (int)(windmill[1]/factor + borderWidth/2);
-				g2.drawOval(x-radius, y-radius, 2*radius, 2*radius);
-				g2.fillOval(x-radiusS, y-radiusS, radiusS*2, radiusS*2);
+				if(score >= highest)
+					highest = score;
+				else if(score < lowest)
+					lowest = score;
+			}
+			for(Particle windmill : layout)
+			{
+				windmill.draw(g2, factor, borderWidth, radius, radiusS, highest, lowest);
 			}
 		}
 	}

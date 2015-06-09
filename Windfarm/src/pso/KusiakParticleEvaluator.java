@@ -57,6 +57,7 @@ public class KusiakParticleEvaluator extends WindFarmLayoutEvaluator {
 			// wind resource per turbine => stored temporaly in tspe
 			for (int turb=0; turb<tpositions.size(); turb++) {
 				// for each turbine
+				double turb_energy = 0;
 				for (int thets=0; thets<scenario.thetas.length; thets++) {
 					// for each direction
 					// calculate the wake
@@ -76,8 +77,11 @@ public class KusiakParticleEvaluator extends WindFarmLayoutEvaluator {
 					totalPow+=scenario.PRated*(1.0-WindScenario.wblcdf(scenario.vRated, cTurb, ki));
 					totalPow*=tint*w;
 					tspe[thets][turb]=totalPow;
+					turb_energy+=totalPow;
 					energyCapture+=totalPow;
 				}
+				tpositions.get(turb).newEval(turb_energy);
+				
 			}
 			wakeFreeRatio=energyCapture/(scenario.wakeFreeEnergy*tpositions.size());
 			return wakeFreeRatio;
