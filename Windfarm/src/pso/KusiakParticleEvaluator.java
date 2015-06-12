@@ -21,7 +21,8 @@ public class KusiakParticleEvaluator extends WindFarmLayoutEvaluator {
 		energyCapture=0;
 		wakeFreeRatio=0;
 		this.scenario=scenario;
-                energyCost=Double.MAX_VALUE;
+        energyCost=Double.MAX_VALUE;
+        super.nEvals = 0;
 	}
 
         @Override
@@ -47,7 +48,7 @@ public class KusiakParticleEvaluator extends WindFarmLayoutEvaluator {
 
 	@Override
 	public double evaluate_2014(ArrayList<Particle> layout) {
-		WindFarmLayoutEvaluator.nEvals++;
+		super.nEvals++;
 		// Copying the layout
 		tpositions=layout;
 

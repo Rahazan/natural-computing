@@ -16,8 +16,9 @@ public class GA {
     double mut_rate;
     double cross_rate;
     ArrayList<double[]> grid;
+    ArrayList<double[][]> layouts;
 
-    private GUI gui;
+//    private GUI gui;
     
     public GA(WindFarmLayoutEvaluator evaluator) {
         wfle = evaluator;
@@ -27,11 +28,12 @@ public class GA {
         mut_rate = 0.05;
         cross_rate = 0.40;
         grid = new ArrayList<double[]>();
-        gui = new GUI(wfle.getScenario());
+//        gui = new GUI(wfle.getScenario()); 
     }
 
-    private void evaluate() {
+    private double evaluate() {
         double minfit = Double.MAX_VALUE;
+        double[][] min_layout = null;
         for (int p=0; p<num_pop; p++) {
             int nturbines=0;
             for (int i=0; i<grid.size(); i++) {
@@ -52,7 +54,7 @@ public class GA {
 
             
 //            gui.update(layout);
-	    wfle.evaluate(layout);
+            wfle.evaluate(layout);
             double coe = wfle.getEnergyCost();
 //            double[] fitnesses = wfle.getTurbineFitnesses();
 //             int n_valid = 0;
@@ -65,14 +67,20 @@ public class GA {
             fits[p] = coe; //n_valid;
             if (fits[p] < minfit) {
                 minfit = fits[p];
+                min_layout = layout;
             }
         }
-        System.out.println(minfit);
+        System.out.println("minfit: " + minfit);
+        layouts.add(min_layout);
+        return minfit;
     }
 
-    public void run() {
+    public ArrayList<Double> run() {
       // set up grid
       // centers must be > 8*R apart
+    	layouts = new ArrayList<double[][]>();
+    	
+    	
       double interval = 8.001 * wfle.scenario.R;
 
       for (double x=0.0; x<wfle.scenario.width; x+=interval) {
@@ -91,6 +99,7 @@ public class GA {
               }
           }
       }
+      
 
       // initialize populations
       pops = new boolean[num_pop][grid.size()];
@@ -106,7 +115,9 @@ public class GA {
       evaluate();
 
       // GA
-      for (int i=0; i<(1000/num_pop); i++) {
+      ArrayList<Double> fitness = new ArrayList<Double>();
+      
+      for (int i=0; i<(2000/num_pop); i++) {
 
           // rank populations (tournament)
           int[] winners = new int[num_pop/tour_size];
@@ -177,8 +188,10 @@ public class GA {
 
           pops = children;
 
-          // evaluate
-          evaluate();
+          fitness.add(evaluate());
       }
+      
+      return fitness;
     }
+    
 }

@@ -14,7 +14,7 @@ import pso.Particle;
  * increased. This counter is available with the function getNumberOfEvaluation.
  */
 public abstract class WindFarmLayoutEvaluator {
-	protected static int nEvals=0;
+	protected int nEvals=0;
 	protected WindScenario scenario;
 
 	/**
@@ -99,7 +99,7 @@ public abstract class WindFarmLayoutEvaluator {
 	/**
 	 * Returns the global number of time the evaluation function has been called.
 	 */
-	public static int getNumberOfEvaluation() {
+	public int getNumberOfEvaluation() {
 		return nEvals;
 	}
 	

@@ -23,7 +23,8 @@ public class KusiakLayoutEvaluator extends WindFarmLayoutEvaluator {
 		energyCapture=0;
 		wakeFreeRatio=0;
 		this.scenario=scenario;
-                energyCost=Double.MAX_VALUE;
+        energyCost=Double.MAX_VALUE;
+        super.nEvals = 0;
 	}
 
         @Override
@@ -49,7 +50,7 @@ public class KusiakLayoutEvaluator extends WindFarmLayoutEvaluator {
 
 	@Override
 	public double evaluate_2014(double[][] layout) {
-		WindFarmLayoutEvaluator.nEvals++;
+		super.nEvals++;
 		// Copying the layout
 		tpositions=new double[layout.length][layout[0].length];
 		for (int i=0; i<layout.length; i++) {
