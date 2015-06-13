@@ -36,7 +36,7 @@ public class PSO {
 
     private ArrayList<Vector2> velocities;
     private final int nParticles = 300;
-    private final double maxStartVelocity = 20000.0;
+    private final double maxStartVelocity = 1000.0;
     private Random rand;
     
     private ArrayList<Particle> particles;
@@ -95,7 +95,7 @@ public class PSO {
 		setupObstacles();
 		
 		for (int i = 0; i < particles.size(); i++) {
-			//particles.get(i).setLinearVelocity(velocities.get(i));
+			particles.get(i).setLinearVelocity(velocities.get(i));
 		}
 
 		System.out.println("Starting swarm with size: " + particles.size());
@@ -112,8 +112,8 @@ public class PSO {
 			gui.update(particles);
 			updateVelocities();
 //			System.out.println("Evaluating " + i + "     " + layout.length) ;
-						
-			double score = this.evaluate(particles);
+			double score = 0.0;		
+			score = this.evaluate(particles);
 			
 			if (score != Double.MAX_VALUE) { //Valid score?
 					
