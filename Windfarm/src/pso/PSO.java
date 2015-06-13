@@ -25,7 +25,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 import windfarmapi.WindFarmLayoutEvaluator;
 import windfarmapi.WindScenario;
 
-public class Test {
+public class PSO {
 
     private WindFarmLayoutEvaluator pwfle;
     private WindScenario scenario;
@@ -35,14 +35,20 @@ public class Test {
     private GUI gui;
 
     private ArrayList<Vector2> velocities;
-    private final int nParticles = 200;
+    private final int nParticles = 300;
     private final double maxStartVelocity = 20000.0;
     private Random rand;
     
     private ArrayList<Particle> particles;
     
+    //Diagonal of the scenario
+    private double maxPossibleDistance = 0.0;
     
-	public Test(WindScenario ws) {
+    //Particles further away than this treshold will not influence eachother
+    private double distanceTreshold = 100000.0;
+    
+    
+	public PSO(WindScenario ws) {
 		this.scenario = ws;
 		this.pwfle = new KusiakParticleEvaluator();
 		this.pwfle.initialize(ws);
@@ -54,31 +60,18 @@ public class Test {
 		world = new World();
 		world.setGravity(new Vector2(0.0,0.0));
 		particles = new ArrayList<Particle>();
-		
-		
+		maxPossibleDistance = Math.sqrt(Math.pow(ws.width,2) +  Math.pow(ws.height,2));
+		distanceTreshold = 0.05 * maxPossibleDistance;
 	}
 	
 	private void setupVelocities() {
 		
 		for(int i = 0; i < particles.size(); i++) {
-//			double vx = rand.nextDouble() * maxStartVelocity * 2 - maxStartVelocity;
-//			double vy = rand.nextDouble() * maxStartVelocity * 2 - maxStartVelocity;
+			double vx = rand.nextDouble() * maxStartVelocity * 2 - maxStartVelocity;
+			double vy = rand.nextDouble() * maxStartVelocity * 2 - maxStartVelocity;
 			
-			Vector2 vel = new Vector2(0,0);
+			Vector2 vel = new Vector2(vx,vy);
 			velocities.add(vel);
-		}
-	}
-	
-	/**
-	 * Might not be needed
-	 */
-	private void setupMass(){
-		
-		double mass = 10;
-		for(Particle party : particles){
-			party.setMass(new Mass(new Vector2(), mass, 0.0));
-			mass+=100;
-//			Vector2.create(magnitude, direction)
 		}
 	}
 
@@ -87,8 +80,12 @@ public class Test {
 		System.out.println("Initializing particles") ;
 		particles = findStartLayout(nParticles ,1);
 		setupVelocities();
-		setupMass();
 		
+		String simulationName = System.currentTimeMillis()+"";
+		
+		//setupMass();
+		
+		//Add particles to the physics world
 		for(Particle party: particles)
 			world.addBody(party);
 		
@@ -98,33 +95,25 @@ public class Test {
 		setupObstacles();
 		
 		for (int i = 0; i < particles.size(); i++) {
-			particles.get(i).setLinearVelocity(velocities.get(i));
+			//particles.get(i).setLinearVelocity(velocities.get(i));
 		}
 
 		System.out.println("Starting swarm with size: " + particles.size());
 		
-//		XYSeries series = new XYSeries("XYGraph");
+		XYSeries series = new XYSeries("XYGraph");
 		
 		for(int i = 0; i < 50000; i++) {
+			
 			//Multiple physics updates to be able to resolve more complex collisions
-			this.world.update(800.0);
-//			try {
-//				Thread.sleep(1);
-//			} catch (InterruptedException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-			this.world.update(800.0);
-			this.world.update(800.0);
+			for(int updateCount = 0; updateCount < 10; updateCount++) {
+				this.world.update(1000.0);
+			}
 
 			gui.update(particles);
 			updateVelocities();
 //			System.out.println("Evaluating " + i + "     " + layout.length) ;
+						
 			double score = this.evaluate(particles);
-	
-			
-			/*
-			double score = this.evaluate(layout);
 			
 			if (score != Double.MAX_VALUE) { //Valid score?
 					
@@ -143,7 +132,7 @@ public class Test {
 					"fitness*1000", // y-axis Label
 					dataset, // Dataset
 					PlotOrientation.VERTICAL, // Plot Orientation
-					true, // Show Legend
+					false, // Show Legend
 					true, // Use tooltips
 					false // Configure chart to generate URLs?
 				);
@@ -152,31 +141,52 @@ public class Test {
 				
 				
 				try {
-					ChartUtilities.saveChartAsJPEG(new File("chart.jpg"), chart, 500, 300);
+					ChartUtilities.saveChartAsJPEG(new File("chart"+simulationName+".jpg"), chart, 500, 300);
 				} catch (IOException e) {
 					System.err.println("Problem occurred creating chart.");
 				}
-			}*/
+			}
 		}
 		
 	}
 	
 	
 	private void updateVelocities(){
-		for(int i = 0 ; i < particles.size() ; i++)
+		for(int i = 0 ; i < particles.size() ; i++) {
+			
+			Particle part1 = particles.get(i);
+			Vector2 resultingForce = new Vector2(0.0,0.0);
+			
+			int n = 0;
+			
 			for(int j = 0 ; j < particles.size() ; j++)
 			{
 				if(i!=j)
 				{
-					Particle part1 = particles.get(i);
 					Particle part2 = particles.get(j);
-					double distance = part1.distanceTo(part2);
-					part1.applyForce(part1.getPosition().difference(part2.getPosition()).negate()); //particles attract eachother
+					Vector2 delta = part1.getPosition().subtract(part2.getPosition());
+					double distance = delta.getMagnitude();
+					if (distance > distanceTreshold) {
+						n++;
+						continue;
+					}
+					
+					//Power to make closer particles weigh much higher
+					double forceScalar = Math.pow(1.0 - distance/this.maxPossibleDistance, 1.5) * 5000;
+					
+					delta.normalize();
+					
+					resultingForce.add(delta.multiply(forceScalar));
 					
 					
 				}
 				
 			}
+			//System.out.println(n + "/" + particles.size());
+			//System.out.println(resultingForce);
+			part1.applyForce(resultingForce);
+		
+		}
 	}
 	
 	private ArrayList<Particle> findStartLayout(int n, int n_iter){
@@ -242,7 +252,7 @@ public class Test {
 	}
 	
 	private void setupObstacles() {
-		double minDistance = 4.0001 * scenario.R;
+		double minDistance = 4.0000 * scenario.R;
 		double duzend = 1000;
 		
 		for (int o=0; o<scenario.obstacles.length; o++) {
@@ -267,8 +277,24 @@ public class Test {
 	}
 	
 	
+	private Particle createParticle(double x, double y) {
+		double minDistance = 4.035 * scenario.R;
+		
+		Particle party = new Particle();
+    	Circle circle = new Circle(minDistance);
+		party.addFixture(circle);
+		party.translate(x,y);
+		party.setMass(new Mass(new Vector2(), 200, 0.0));
+		BodyFixture fixture = party.getFixtures().get(0);
+		fixture.setRestitution(0.5);
+		fixture.setFriction(0.0);
+		
+		return party;
+	}
+	
+	
 	private ArrayList<Particle> setupParticles(int n){
-		double minDistance = 4.03 * scenario.R;
+		double minDistance = 4.025 * scenario.R;
 		ArrayList<Particle> layout = new ArrayList<Particle>();
 		for (int i=0; i<n; i++) {
 			
@@ -282,15 +308,7 @@ public class Test {
 		    		double x = rand.nextDouble()*pwfle.getScenario().width;
 			    	double y = rand.nextDouble()*pwfle.getScenario().height;
 			    	
-			    	party = new Particle();
-			    	Circle circle = new Circle(minDistance);
-	    			party.addFixture(circle);
-	    			party.translate(x,y);
-	    			party.setMass();
-	    			BodyFixture fixture = party.getFixtures().get(0);
-	    			fixture.setRestitution(1.0);
-	    			fixture.setFriction(0.0);
-	    			
+			    	party = createParticle(x,y);
 			    	
 		    		//Check whether particle is too close to other particles
 		    		for (Body otherParticle: layout) {
@@ -309,7 +327,6 @@ public class Test {
 	            	}
 		    		
 		    		if (valid) {
-//		    			world.addBody(party);
 		    			layout.add(party);
 		    		}
 		    		else {
