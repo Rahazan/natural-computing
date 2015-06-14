@@ -32,6 +32,7 @@ public class PSO {
     private WindFarmLayoutEvaluator evaluator;
     private World world;
     private ParticleFactory particleFactory;
+    private Plotter plotter;
     
     private GUI gui;
 
@@ -55,6 +56,7 @@ public class PSO {
 		rand = new Random();
 		gui = new GUI(eval.getFarmWidth(), eval.getFarmHeight(), eval.getObstacles(), eval.getTurbineRadius());
 		particleFactory = new ParticleFactory(eval);
+		plotter = new Plotter();
 		
 		// Physics engine
 		world = new World();
@@ -80,7 +82,6 @@ public class PSO {
 		System.out.println("Initializing particles") ;
 		particles = findStartLayout(nParticles ,1);
 		setupVelocities();
-		String simulationName = System.currentTimeMillis()+"";
 		
 		//setupMass();
 		
@@ -90,16 +91,13 @@ public class PSO {
 		
 		System.out.println("Initializing velocities") ;
 		
-		setupWalls();
-		setupObstacles();
+		WorldCreator.setupWorld(world, evaluator);
 		
 		for (int i = 0; i < particles.size(); i++) {
 			particles.get(i).setLinearVelocity(velocities.get(i));
 		}
 
 		System.out.println("Starting swarm with size: " + particles.size());
-		
-		XYSeries series = new XYSeries("XYGraph");
 		
 		for(int i = 0; i < 100; i++) {
 			
@@ -112,16 +110,14 @@ public class PSO {
 				gui.update(particles);
 				validPositions = this.evaluator.checkConstraint(particlesToLayout(particles));
 			}
-
-			//gui.update(particles);
 			
 			System.out.println("Evaluating " + i) ;
 			double score = 0.0;		
-			//score = this.evaluate(particles);
+			score = this.evaluate(particles);
 			
 			if (score != Double.MAX_VALUE && score != 0.0) { //Valid score?
 					
-				series.add(i,score*1000);
+				plotter.addDataPoint(i,score*1000);
 				
 				double[] turbineFitnesses = evaluator.getTurbineFitnesses();
 		        for(int q = 0; q < turbineFitnesses.length; q++) {
@@ -139,32 +135,6 @@ public class PSO {
 				
 			}
 			
-			
-			if (i % 10 == 0) { //Plot every 10 iterations
-				// Add the series to your data set
-				XYSeriesCollection dataset = new XYSeriesCollection();
-				dataset.addSeries(series);
-				// Generate the graph
-				JFreeChart chart = ChartFactory.createXYLineChart(
-					"", // Title
-					"time", // x-axis Label
-					"fitness*1000", // y-axis Label
-					dataset, // Dataset
-					PlotOrientation.VERTICAL, // Plot Orientation
-					false, // Show Legend
-					true, // Use tooltips
-					false // Configure chart to generate URLs?
-				);
-				XYPlot xyPlot = (XYPlot) chart.getPlot();
-				((NumberAxis)xyPlot.getRangeAxis()).setAutoRangeIncludesZero(false);
-				
-				
-				try {
-					ChartUtilities.saveChartAsJPEG(new File("chart"+simulationName+".jpg"), chart, 500, 300);
-				} catch (IOException e) {
-					System.err.println("Problem occurred creating chart.");
-				}
-			}
 		}
 		
 	}
@@ -234,7 +204,6 @@ public class PSO {
 	 */
 	private double[][] particlesToLayout(ArrayList<Particle> parts) {
 		double[][] layout = new double[parts.size()][2];
-		Particle part = parts.get(0);
 		
 		for(int j = 0 ; j < parts.size() ; j++){
 			layout[j][0] = parts.get(j).getTransform().getTranslationX();
@@ -243,60 +212,6 @@ public class PSO {
 		return layout;
 	}
 	
-	
-	private void setupWalls() {
-		double minDistance = 4 * evaluator.getTurbineRadius();
-		
-		Body wallNorth = new Body();
-		Rectangle rectS = new Rectangle(evaluator.getFarmWidth(), 100);
-		wallNorth.addFixture(rectS);
-		wallNorth.translate(evaluator.getFarmWidth()*0.5,-50-minDistance);
-		world.addBody(wallNorth);
-		
-		Body wallSouth = new Body();
-		Rectangle rectN = new Rectangle(evaluator.getFarmWidth(), 100);
-		wallSouth.addFixture(rectN);
-		wallSouth.translate(evaluator.getFarmWidth()*0.5,evaluator.getFarmHeight()+50+minDistance);
-		world.addBody(wallSouth);
-		
-		Body wallE = new Body();
-		Rectangle rectE = new Rectangle(100, evaluator.getFarmHeight());
-		wallE.addFixture(rectE);
-		wallE.translate(-50-minDistance,evaluator.getFarmHeight()*0.5);
-		world.addBody(wallE);
-		
-		Body wallW = new Body();
-		Rectangle rectW = new Rectangle(100, evaluator.getFarmHeight());
-		wallW.addFixture(rectW);
-		wallW.translate(evaluator.getFarmWidth()+50+minDistance,evaluator.getFarmHeight()*0.5);
-		world.addBody(wallW);
-		
-	}
-	
-	private void setupObstacles() {
-		double minDistance = 4.0000 * evaluator.getTurbineRadius();
-		double duzend = 1000;
-		
-		for (int o=0; o<evaluator.getObstacles().length; o++) {
-    		double[] obs = evaluator.getObstacles()[o];
-
-			double[] obsClone = obs.clone();
-			if (obsClone[0] < 1.0) obsClone[0] = -duzend;
-			if (obsClone[1] < 1.0) obsClone[1] = -duzend;
-			if (obsClone[2] > evaluator.getFarmWidth()-1) obsClone[2] = evaluator.getFarmWidth()+duzend;
-			if (obsClone[3] > evaluator.getFarmHeight()-1) obsClone[3] = evaluator.getFarmHeight()+duzend;
-			
-			
-			Body bod = new Body();
-			double width = obsClone[2]-obsClone[0]-minDistance*2;
-			double height = obsClone[3]-obsClone[1]-minDistance*2;
-
-			Rectangle rect = new Rectangle(width, height);
-			bod.addFixture(rect);
-			bod.translate(obsClone[0]+0.5*width+minDistance ,obsClone[1]+0.5*height+minDistance );
-			world.addBody(bod);
-    	}
-	}
 	
 	private double evaluate(ArrayList<Particle> layout)
 	{
