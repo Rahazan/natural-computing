@@ -28,14 +28,17 @@ public class Testing {
 			writeFitness("./data/ga/", i, false, fitnesses, timeTaken);
 			
 			//with obstacles
-			ws = new WindScenario(filepath + "obs_0" + i + ".xml");
+
+		}	
+		for(int i = 0 ; i < 10 ; i++){
+			WindScenario ws = new WindScenario(filepath + "obs_0" + i + ".xml");
 			wfle.initialize(ws);
 			System.out.println("Running GA on scenario obs_0" + i);
-			time = System.currentTimeMillis();
+			long time = System.currentTimeMillis();
 			fitnesses = algorithm.run();
-			timeTaken = System.currentTimeMillis() - time;
+			long timeTaken = System.currentTimeMillis() - time;
 			writeFitness("./data/ga/", i, true, fitnesses, timeTaken);
-		}	
+		}
 	}
 	
 	public void testMax() throws Exception

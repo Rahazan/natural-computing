@@ -24,8 +24,7 @@ public class Benchmarks {
 		double fitness;
 		for(int i = 0 ; i < 2000 ; i++)
 		{
-//			n = rand.nextInt(400) + 200;
-			n = 1;
+			n = rand.nextInt(400) + 200;
 			layout = randomLayout(n, scenario);
 			fitness = eval.evaluate(layout);
 			results.add(new LayoutNumberPair(n, fitness));
@@ -104,7 +103,6 @@ public class Benchmarks {
 	public LayoutNumberPair maxFilled(WindScenario scenario){
 		
 		KusiakLayoutEvaluator eval = new KusiakLayoutEvaluator();
-		ArrayList<LayoutNumberPair> results = new ArrayList<LayoutNumberPair>();
 		eval.initialize(scenario);
 		ArrayList<double[]> grid = new ArrayList<double[]>();
 		

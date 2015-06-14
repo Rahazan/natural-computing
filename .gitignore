@@ -63,3 +63,6 @@ target/
 Windfarm/chart.jpg
 *.classpath
 *.classpath
+
+# testdata
+Windfarm/data
