@@ -1,9 +1,6 @@
 package windfarmapi;
-
 import java.util.ArrayList;
 import java.util.Random;
-
-import pso.GUI;
 
 public class GA {
 
@@ -16,10 +13,7 @@ public class GA {
     double mut_rate;
     double cross_rate;
     ArrayList<double[]> grid;
-    ArrayList<double[][]> layouts;
 
-//    private GUI gui;
-    
     public GA(WindFarmLayoutEvaluator evaluator) {
         wfle = evaluator;
         rand = new Random();
@@ -28,12 +22,10 @@ public class GA {
         mut_rate = 0.05;
         cross_rate = 0.40;
         grid = new ArrayList<double[]>();
-//        gui = new GUI(wfle.getScenario()); 
     }
 
-    private double evaluate() {
+    private void evaluate() {
         double minfit = Double.MAX_VALUE;
-        double[][] min_layout = null;
         for (int p=0; p<num_pop; p++) {
             int nturbines=0;
             for (int i=0; i<grid.size(); i++) {
@@ -51,43 +43,33 @@ public class GA {
                     l_i++;
                 }
             }
+	    
+	    double coe;
+	    if (wfle.checkConstraint(layout)) {
+		wfle.evaluate(layout);
+		coe = wfle.getEnergyCost();
+	    } else {
+		coe = Double.MAX_VALUE;
+	    }
 
-            
-//            gui.update(layout);
-            wfle.evaluate(layout);
-            double coe = wfle.getEnergyCost();
-//            double[] fitnesses = wfle.getTurbineFitnesses();
-//             int n_valid = 0;
-//             for (int i=0; i<fitnesses.length; i++) {
-//                 if (fitnesses[i] > 0.80) {
-//                     n_valid++;
-//                 }
-//             }
-
-            fits[p] = coe; //n_valid;
+            fits[p] = coe;
             if (fits[p] < minfit) {
                 minfit = fits[p];
-                min_layout = layout;
             }
         }
-        System.out.println("minfit: " + minfit);
-        layouts.add(min_layout);
-        return minfit;
+        System.out.println(minfit);
     }
 
-    public ArrayList<Double> run() {
+    public void run() {
       // set up grid
       // centers must be > 8*R apart
-    	layouts = new ArrayList<double[][]>();
-    	
-    	
-      double interval = 8.001 * wfle.scenario.R;
+	double interval = 8.001 * wfle.getTurbineRadius();
 
-      for (double x=0.0; x<wfle.scenario.width; x+=interval) {
-          for (double y=0.0; y<wfle.scenario.height; y+=interval) {
+	for (double x=0.0; x<wfle.getFarmWidth(); x+=interval) {
+	    for (double y=0.0; y<wfle.getFarmHeight(); y+=interval) {
               boolean valid = true;
-              for (int o=0; o<wfle.scenario.obstacles.length; o++) {
-                  double[] obs = wfle.scenario.obstacles[o];
+              for (int o=0; o<wfle.getObstacles().length; o++) {
+                  double[] obs = wfle.getObstacles()[o];
                   if (x>obs[0] && y>obs[1] && x<obs[2] && y<obs[3]) {
                       valid = false;
                   }
@@ -99,7 +81,6 @@ public class GA {
               }
           }
       }
-      
 
       // initialize populations
       pops = new boolean[num_pop][grid.size()];
@@ -115,8 +96,6 @@ public class GA {
       evaluate();
 
       // GA
-      ArrayList<Double> fitness = new ArrayList<Double>();
-      
       for (int i=0; i<(2000/num_pop); i++) {
 
           // rank populations (tournament)
@@ -188,10 +167,8 @@ public class GA {
 
           pops = children;
 
-          fitness.add(evaluate());
+          // evaluate
+          evaluate();
       }
-      
-      return fitness;
     }
-    
 }

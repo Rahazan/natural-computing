@@ -19,22 +19,25 @@ public class Testing {
 		ArrayList<Double> fitnesses;
 		for(int i = 0 ; i < 10 ; i++)
 		{
+			
+			//TODO FIX, broke with windfarmapi update, should no longer be needed with leaderboard!
+			
 			WindScenario ws = new WindScenario(filepath + "0" + i + ".xml");
 			wfle.initialize(ws);
 			System.out.println("Running GA on scenario 0" + i);
 			long time = System.currentTimeMillis();
-			fitnesses = algorithm.run();
+			//fitnesses = algorithm.run();
 			long timeTaken = System.currentTimeMillis() - time;
-			writeFitness("./data/ga/", i, false, fitnesses, timeTaken);
+			//writeFitness("./data/ga/", i, false, fitnesses, timeTaken);
 			
 			//with obstacles
 			ws = new WindScenario(filepath + "obs_0" + i + ".xml");
 			wfle.initialize(ws);
 			System.out.println("Running GA on scenario obs_0" + i);
 			time = System.currentTimeMillis();
-			fitnesses = algorithm.run();
+			//fitnesses = algorithm.run();
 			timeTaken = System.currentTimeMillis() - time;
-			writeFitness("./data/ga/", i, true, fitnesses, timeTaken);
+			//writeFitness("./data/ga/", i, true, fitnesses, timeTaken);
 		}	
 	}
 	

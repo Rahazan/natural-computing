@@ -1,9 +1,4 @@
 package windfarmapi;
-
-import java.util.ArrayList;
-
-import pso.Particle;
-
 /**
  * The class WindFarmLayoutEvaluator is an interface to easily exchange the
  * evaluation function of the wind farm layouts. The evaluator has to be initialized
@@ -14,15 +9,7 @@ import pso.Particle;
  * increased. This counter is available with the function getNumberOfEvaluation.
  */
 public abstract class WindFarmLayoutEvaluator {
-	protected int nEvals=0;
-	protected WindScenario scenario;
-
-	/**
-	 * Initializes the evaluator with a wind scenario
-	 * This method doesn't increase the number of evaluations counter.
-	 * @param scenario
-	 */
-	public abstract void initialize(WindScenario scenario);
+	protected static int nEvals=0;
 
 	/**
 	 * 2015 WIND FARM LAYOUT OPTIMIZATION EVALUATION FUNCTION
@@ -33,23 +20,7 @@ public abstract class WindFarmLayoutEvaluator {
 	 * @return the cost of energy (positive) 
 	 * and max_double if the layout is invalid
 	 */
-	
 	public abstract double evaluate(double[][] layout);
-	
-	public abstract double evaluate(ArrayList<Particle> layout);
-
-	/**
-	 * 2014 WIND FARM LAYOUT OPTIMIZATION EVALUATION FUNCTION
-         *
-	 * Evaluates a given layout and returns its wake free ratio
-	 * This method increases the number of evaluations counter.
-	 * @param layout The layout to evaluate
-	 * @return The wake free ratio of the layout 
-	 * or a negative value is the layout is invalid
-	 */
-	public abstract double evaluate_2014(double[][] layout);
-	
-	public abstract double evaluate_2014(ArrayList<Particle> layout);
 
 	/**
 	 * Returns the energy outputs per wind turbine and per direction of the last
@@ -99,11 +70,39 @@ public abstract class WindFarmLayoutEvaluator {
 	/**
 	 * Returns the global number of time the evaluation function has been called.
 	 */
-	public int getNumberOfEvaluation() {
+	public static int getNumberOfEvaluation() {
 		return nEvals;
 	}
-	
-	public abstract WindScenario getScenario();
 
+    /**
+     * Check if a layout violate or not the constraints of a wind farm. It checks:
+     *     - no turbine violates the security distance
+     *     - no turbine is out of the farm
+     *     - no turbine is inside an obstacle
+     * This function does not increase the evaluation counter.
+     * @param layout The layout to check
+     * @result true if the layout is valid, false otherwise
+     */
+        public abstract boolean checkConstraint(double layout[][]);
 
+    /**
+     * Returns the radius of one turbine
+     */
+    public abstract double getTurbineRadius();
+
+    /**
+     * Returns the farm width
+     */
+    public abstract double getFarmWidth();
+    
+    /**
+     * Returns the farm heigth
+     */
+    public abstract double getFarmHeight();
+
+    /**
+     * Return the obstacles of the farm
+     * @return an array of [xmin, ymin, xmax, ymax] for each obstacle.
+     */
+    public abstract double[][] getObstacles();
 }

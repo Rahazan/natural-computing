@@ -1,11 +1,7 @@
 package windfarmapi;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.util.ArrayList;
 import java.util.StringTokenizer;
-
-import pso.Particle;
 
 public class KusiakLayoutEvaluator extends WindFarmLayoutEvaluator {
 	protected double tspe[][];
@@ -13,18 +9,18 @@ public class KusiakLayoutEvaluator extends WindFarmLayoutEvaluator {
 	protected double energyCapture;
 	protected double wakeFreeRatio;
 	protected double energyCost;
+
+    protected WindScenario scenario;
 	
 	public static final double fac=Math.PI/180;
 
-	@Override
 	public void initialize(WindScenario scenario) {
 		tspe=null;
 		tpositions=null;
 		energyCapture=0;
 		wakeFreeRatio=0;
 		this.scenario=scenario;
-        energyCost=Double.MAX_VALUE;
-        super.nEvals = 0;
+                energyCost=Double.MAX_VALUE;
 	}
 
         @Override
@@ -48,9 +44,8 @@ public class KusiakLayoutEvaluator extends WindFarmLayoutEvaluator {
 	    return energyCost;
 	}
 
-	@Override
 	public double evaluate_2014(double[][] layout) {
-		super.nEvals++;
+		WindFarmLayoutEvaluator.nEvals++;
 		// Copying the layout
 		tpositions=new double[layout.length][layout[0].length];
 		for (int i=0; i<layout.length; i++) {
@@ -60,7 +55,7 @@ public class KusiakLayoutEvaluator extends WindFarmLayoutEvaluator {
 		}
 
 		energyCapture=0;
-		if (checkConstraint()) {
+		if (checkConstraint(tpositions)) {
 			tspe=new double[scenario.thetas.length][tpositions.length];
 			// wind resource per turbine => stored temporaly in tspe
 			for (int turb=0; turb<tpositions.length; turb++) {
@@ -115,26 +110,26 @@ public class KusiakLayoutEvaluator extends WindFarmLayoutEvaluator {
 		return res;
 	}
 
-	protected boolean checkConstraint() {
-	    for (int i=0; i<tpositions.length; i++) {
+	public boolean checkConstraint(double layout[][]) {
+	    for (int i=0; i<layout.length; i++) {
 		// checking obstacle constraints
 		for (int j=0; j<scenario.obstacles.length; j++) {
-		    if (tpositions[i][0] > scenario.obstacles[j][0] &&
-			tpositions[i][0] < scenario.obstacles[j][2] &&
-			tpositions[i][1] > scenario.obstacles[j][1] &&
-			tpositions[i][1] < scenario.obstacles[j][3]) {
-			System.out.println("Turbine "+i+"("+tpositions[i][0]+", "+tpositions[i][1]+") is in the obstacle "+j+" ["+scenario.obstacles[j][0]+", "+scenario.obstacles[j][1]+", "+scenario.obstacles[j][2]+", "+scenario.obstacles[j][3]+"].");
+		    if (layout[i][0] > scenario.obstacles[j][0] &&
+			layout[i][0] < scenario.obstacles[j][2] &&
+			layout[i][1] > scenario.obstacles[j][1] &&
+			layout[i][1] < scenario.obstacles[j][3]) {
+			System.out.println("Turbine "+i+"("+layout[i][0]+", "+layout[i][1]+") is in the obstacle "+j+" ["+scenario.obstacles[j][0]+", "+scenario.obstacles[j][1]+", "+scenario.obstacles[j][2]+", "+scenario.obstacles[j][3]+"].");
 			return false;
 		    }
 		}
 		// checking the security constraints
-	        for (int j=0; j<tpositions.length; j++) {
+	        for (int j=0; j<layout.length; j++) {
 	            if (i!=j) {
 	                // calculate the sqared distance between both turb
-	                double dist=(tpositions[i][0]-tpositions[j][0])*(tpositions[i][0]-tpositions[j][0])+
-	                (tpositions[i][1]-tpositions[j][1])*(tpositions[i][1]-tpositions[j][1]);
+	                double dist=(layout[i][0]-layout[j][0])*(layout[i][0]-layout[j][0])+
+	                (layout[i][1]-layout[j][1])*(layout[i][1]-layout[j][1]);
 	                if (dist<scenario.minDist) {
-			    System.out.println("Security distance contraint violated between turbines "+i+" ("+tpositions[i][0]+", "+tpositions[i][1]+") and "+j+" ("+tpositions[j][0]+", "+tpositions[j][1]+"): "+Math.sqrt(dist)+" > "+Math.sqrt(scenario.minDist));
+			    System.out.println("Security distance contraint violated between turbines "+i+" ("+layout[i][0]+", "+layout[i][1]+") and "+j+" ("+layout[j][0]+", "+layout[j][1]+"): "+Math.sqrt(dist)+" > "+Math.sqrt(scenario.minDist));
 	                    return false;
 	                }
 	            }
@@ -206,20 +201,23 @@ public class KusiakLayoutEvaluator extends WindFarmLayoutEvaluator {
 		return energyCost;
 	}
 
-	@Override
-	public WindScenario getScenario() {
-		return scenario;
-	}
+    @Override
+	public double getTurbineRadius() {
+	return scenario.R;
+    }
 
-	@Override
-	public double evaluate(ArrayList<Particle> layout) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+    @Override
+	public double getFarmWidth() {
+	return scenario.width;
+    }
 
-	@Override
-	public double evaluate_2014(ArrayList<Particle> layout) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+    @Override
+	public double getFarmHeight() {
+	return scenario.height;
+    }
+
+    @Override
+	public double[][] getObstacles() {
+	return scenario.obstacles;
+    }
 }

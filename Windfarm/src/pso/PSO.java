@@ -22,20 +22,21 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
+import windfarmapi.CompetitionEvaluator;
+import windfarmapi.KusiakLayoutEvaluator;
 import windfarmapi.WindFarmLayoutEvaluator;
 import windfarmapi.WindScenario;
 
 public class PSO {
 
-    private WindFarmLayoutEvaluator pwfle;
-    private WindScenario scenario;
-    
+    private WindFarmLayoutEvaluator evaluator;
+
     private World world;
     
     private GUI gui;
 
     private ArrayList<Vector2> velocities;
-    private final int nParticles = 300;
+    private final int nParticles = 1337;
     private final double maxStartVelocity = 1000.0;
     private Random rand;
     
@@ -45,25 +46,23 @@ public class PSO {
     private double maxPossibleDistance = 0.0;
     
     //Particles further away than this treshold will not influence eachother
-    private double distanceTreshold = 100000.0;
+    private double distanceTreshold = Double.MAX_VALUE;
     
-    
-	public PSO(WindScenario ws) {
-		this.scenario = ws;
-		this.pwfle = new KusiakParticleEvaluator();
-		this.pwfle.initialize(ws);
+	
+	public PSO(WindFarmLayoutEvaluator eval) {
+		this.evaluator = eval;	
 		this.velocities = new ArrayList<Vector2>();
 		rand = new Random();
-		gui = new GUI(ws);
+		gui = new GUI(eval.getFarmWidth(), eval.getFarmHeight(), eval.getObstacles(), eval.getTurbineRadius());
 		
 		// Physics engine
 		world = new World();
 		world.setGravity(new Vector2(0.0,0.0));
 		particles = new ArrayList<Particle>();
-		maxPossibleDistance = Math.sqrt(Math.pow(ws.width,2) +  Math.pow(ws.height,2));
+		maxPossibleDistance = Math.sqrt(Math.pow(eval.getFarmWidth(),2) +  Math.pow(eval.getFarmHeight(),2));
 		distanceTreshold = 0.05 * maxPossibleDistance;
 	}
-	
+
 	private void setupVelocities() {
 		
 		for(int i = 0; i < particles.size(); i++) {
@@ -80,7 +79,6 @@ public class PSO {
 		System.out.println("Initializing particles") ;
 		particles = findStartLayout(nParticles ,1);
 		setupVelocities();
-		
 		String simulationName = System.currentTimeMillis()+"";
 		
 		//setupMass();
@@ -102,22 +100,45 @@ public class PSO {
 		
 		XYSeries series = new XYSeries("XYGraph");
 		
-		for(int i = 0; i < 50000; i++) {
+		for(int i = 0; i < 1000; i++) {
+			
+			boolean validPositions = true;
 			
 			//Multiple physics updates to be able to resolve more complex collisions
-			for(int updateCount = 0; updateCount < 10; updateCount++) {
+			for(int updateCount = 0; updateCount < 100 || !validPositions; updateCount++) {
 				this.world.update(1000.0);
+				updateVelocities();
+				gui.update(particles);
+				validPositions = this.evaluator.checkConstraint(particlesToLayout(particles));
 			}
 
-			gui.update(particles);
-			updateVelocities();
-//			System.out.println("Evaluating " + i + "     " + layout.length) ;
+			//gui.update(particles);
+			
+			System.out.println("Evaluating " + i) ;
 			double score = 0.0;		
 			score = this.evaluate(particles);
 			
-			if (score != Double.MAX_VALUE) { //Valid score?
+			if (score != Double.MAX_VALUE && score != 0.0) { //Valid score?
 					
 				series.add(i,score*1000);
+				
+				double[] turbineFitnesses = evaluator.getTurbineFitnesses();
+		        for(int q = 0; q < turbineFitnesses.length; q++) {
+		        	double fit = turbineFitnesses[q];
+		        	particles.get(q).newEval(fit);
+		        }
+		        
+		        //Remove worst particle
+		        if(particles.size() > 80 && i %2 == 0) {
+		        	int index = PSO.smallestIndex(turbineFitnesses);
+		        	System.out.println("Removing worst turbine with fitness " + turbineFitnesses[index]);
+		        	particles.remove(index);
+		        }
+		        else {
+		        	int index = PSO.smallestIndex(turbineFitnesses);
+		        	particles.get(index).newEval(particles.get(index).getScore()/100);
+		        }
+				
 			}
 			
 			
@@ -157,7 +178,6 @@ public class PSO {
 			Particle part1 = particles.get(i);
 			Vector2 resultingForce = new Vector2(0.0,0.0);
 			
-			int n = 0;
 			
 			for(int j = 0 ; j < particles.size() ; j++)
 			{
@@ -167,12 +187,11 @@ public class PSO {
 					Vector2 delta = part1.getPosition().subtract(part2.getPosition());
 					double distance = delta.getMagnitude();
 					if (distance > distanceTreshold) {
-						n++;
 						continue;
 					}
 					
 					//Power to make closer particles weigh much higher
-					double forceScalar = Math.pow(1.0 - distance/this.maxPossibleDistance, 1.5) * 5000;
+					double forceScalar = Math.pow(1.0 - distance/this.maxPossibleDistance, 1.5) * 2500;
 					
 					delta.normalize();
 					
@@ -182,7 +201,6 @@ public class PSO {
 				}
 				
 			}
-			//System.out.println(n + "/" + particles.size());
 			//System.out.println(resultingForce);
 			part1.applyForce(resultingForce);
 		
@@ -223,46 +241,46 @@ public class PSO {
 	
 	
 	private void setupWalls() {
-		double minDistance = 4 * scenario.R;
+		double minDistance = 4 * evaluator.getTurbineRadius();
 		
 		Body wallNorth = new Body();
-		Rectangle rectS = new Rectangle(scenario.width, 100);
+		Rectangle rectS = new Rectangle(evaluator.getFarmWidth(), 100);
 		wallNorth.addFixture(rectS);
-		wallNorth.translate(scenario.width*0.5,-50-minDistance);
+		wallNorth.translate(evaluator.getFarmWidth()*0.5,-50-minDistance);
 		world.addBody(wallNorth);
 		
 		Body wallSouth = new Body();
-		Rectangle rectN = new Rectangle(scenario.width, 100);
+		Rectangle rectN = new Rectangle(evaluator.getFarmWidth(), 100);
 		wallSouth.addFixture(rectN);
-		wallSouth.translate(scenario.width*0.5,scenario.height+50+minDistance);
+		wallSouth.translate(evaluator.getFarmWidth()*0.5,evaluator.getFarmHeight()+50+minDistance);
 		world.addBody(wallSouth);
 		
 		Body wallE = new Body();
-		Rectangle rectE = new Rectangle(100, scenario.height);
+		Rectangle rectE = new Rectangle(100, evaluator.getFarmHeight());
 		wallE.addFixture(rectE);
-		wallE.translate(-50-minDistance,scenario.height*0.5);
+		wallE.translate(-50-minDistance,evaluator.getFarmHeight()*0.5);
 		world.addBody(wallE);
 		
 		Body wallW = new Body();
-		Rectangle rectW = new Rectangle(100, scenario.height);
+		Rectangle rectW = new Rectangle(100, evaluator.getFarmHeight());
 		wallW.addFixture(rectW);
-		wallW.translate(scenario.width+50+minDistance,scenario.height*0.5);
+		wallW.translate(evaluator.getFarmWidth()+50+minDistance,evaluator.getFarmHeight()*0.5);
 		world.addBody(wallW);
 		
 	}
 	
 	private void setupObstacles() {
-		double minDistance = 4.0000 * scenario.R;
+		double minDistance = 4.0000 * evaluator.getTurbineRadius();
 		double duzend = 1000;
 		
-		for (int o=0; o<scenario.obstacles.length; o++) {
-    		double[] obs = scenario.obstacles[o];
+		for (int o=0; o<evaluator.getObstacles().length; o++) {
+    		double[] obs = evaluator.getObstacles()[o];
 
 			double[] obsClone = obs.clone();
 			if (obsClone[0] < 1.0) obsClone[0] = -duzend;
 			if (obsClone[1] < 1.0) obsClone[1] = -duzend;
-			if (obsClone[2] > scenario.width-1) obsClone[2] = scenario.width+duzend;
-			if (obsClone[3] > scenario.height-1) obsClone[3] = scenario.height+duzend;
+			if (obsClone[2] > evaluator.getFarmWidth()-1) obsClone[2] = evaluator.getFarmWidth()+duzend;
+			if (obsClone[3] > evaluator.getFarmHeight()-1) obsClone[3] = evaluator.getFarmHeight()+duzend;
 			
 			
 			Body bod = new Body();
@@ -278,7 +296,7 @@ public class PSO {
 	
 	
 	private Particle createParticle(double x, double y) {
-		double minDistance = 4.035 * scenario.R;
+		double minDistance = 4.035 * evaluator.getTurbineRadius();
 		
 		Particle party = new Particle();
     	Circle circle = new Circle(minDistance);
@@ -294,7 +312,7 @@ public class PSO {
 	
 	
 	private ArrayList<Particle> setupParticles(int n){
-		double minDistance = 4.025 * scenario.R;
+		double minDistance = 4.025 * evaluator.getTurbineRadius();
 		ArrayList<Particle> layout = new ArrayList<Particle>();
 		for (int i=0; i<n; i++) {
 			
@@ -305,8 +323,8 @@ public class PSO {
 		    	int nFailures = 0;
 		    	while(!valid) {
 		    		valid = true;
-		    		double x = rand.nextDouble()*pwfle.getScenario().width;
-			    	double y = rand.nextDouble()*pwfle.getScenario().height;
+		    		double x = rand.nextDouble()*evaluator.getFarmWidth();
+			    	double y = rand.nextDouble()*evaluator.getFarmHeight();
 			    	
 			    	party = createParticle(x,y);
 			    	
@@ -318,8 +336,8 @@ public class PSO {
 		    			}
 		    		}
 		    		
-		    		for (int o=0; o<pwfle.getScenario().obstacles.length; o++) {
-	            		double[] obs = pwfle.getScenario().obstacles[o];
+		    		for (int o=0; o<evaluator.getObstacles().length; o++) {
+	            		double[] obs = evaluator.getObstacles()[o];
 	            		if (x>obs[0] && y>obs[1] && x<obs[2] && y<obs[3]) {
 	            			valid = false;
 	            			break;
@@ -351,11 +369,27 @@ public class PSO {
 	private double evaluate(ArrayList<Particle> layout)
 	{
 		long time = System.currentTimeMillis();
-	    double fitness = pwfle.evaluate(layout);
+		
+	    double fitness = evaluator.evaluate(particlesToLayout(layout));
         long timeTaken = System.currentTimeMillis() - time;
         System.out.println("F: " + fitness + ", time taken: " + timeTaken);
         
+        
         return fitness;
+	}
+	
+	
+    public static int smallestIndex (double[] array) {
+    	double currentValue = array[0]; 
+    	int smallestIndex = 0;
+		for (int j=1; j < array.length; j++) {
+			if (array[j] < currentValue) {
+				currentValue = array[j];
+				smallestIndex = j;
+			}
+		}
+		
+		return smallestIndex;
 	}
 	
 
