@@ -10,8 +10,6 @@ import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import windfarmapi.WindScenario;
-
 public class GUI extends JPanel{
 	
 	private int width;

@@ -1,31 +1,11 @@
 package pso;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
 
-import org.dyn4j.dynamics.Body;
-import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.dynamics.World;
-import org.dyn4j.geometry.Circle;
-import org.dyn4j.geometry.Mass;
-import org.dyn4j.geometry.Mass.Type;
-import org.dyn4j.geometry.Rectangle;
 import org.dyn4j.geometry.Vector2;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartUtilities;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
-
-import windfarmapi.CompetitionEvaluator;
-import windfarmapi.KusiakLayoutEvaluator;
 import windfarmapi.WindFarmLayoutEvaluator;
-import windfarmapi.WindScenario;
 
 public class PSO {
 
@@ -105,7 +85,7 @@ public class PSO {
 			
 			//Multiple physics updates to be able to resolve more complex collisions
 			for(int updateCount = 0; updateCount < 80 || !validPositions; updateCount++) {
-				this.world.update(800.0);
+				this.world.update(0.1699);
 				updateVelocities();
 				gui.update(particles);
 				validPositions = this.evaluator.checkConstraint(particlesToLayout(particles));
@@ -113,7 +93,7 @@ public class PSO {
 			
 			System.out.println("Evaluating " + i) ;
 			double score = 0.0;		
-			score = this.evaluate(particles);
+			//score = this.evaluate(particles);
 			
 			if (score != Double.MAX_VALUE && score != 0.0) { //Valid score?
 					
