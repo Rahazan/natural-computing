@@ -36,7 +36,7 @@ public class PSO {
     private GUI gui;
 
     private ArrayList<Vector2> velocities;
-    private final int nParticles = 1337;
+    private final int nParticles = 13337;
     private final double maxStartVelocity = 1000.0;
     private Random rand;
     
@@ -100,13 +100,13 @@ public class PSO {
 		
 		XYSeries series = new XYSeries("XYGraph");
 		
-		for(int i = 0; i < 1000; i++) {
+		for(int i = 0; i < 100; i++) {
 			
 			boolean validPositions = true;
 			
 			//Multiple physics updates to be able to resolve more complex collisions
-			for(int updateCount = 0; updateCount < 100 || !validPositions; updateCount++) {
-				this.world.update(1000.0);
+			for(int updateCount = 0; updateCount < 80 || !validPositions; updateCount++) {
+				this.world.update(800.0);
 				updateVelocities();
 				gui.update(particles);
 				validPositions = this.evaluator.checkConstraint(particlesToLayout(particles));
@@ -129,7 +129,7 @@ public class PSO {
 		        }
 		        
 		        //Remove worst particle
-		        if(particles.size() > 80 && i %40 == 0) {
+		        if(particles.size() > 50 && i %15 == 0) {
 		        	int index = PSO.smallestIndex(turbineFitnesses);
 		        	System.out.println("Removing worst turbine with fitness " + turbineFitnesses[index]);
 		        	particles.remove(index);

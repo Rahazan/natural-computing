@@ -18,12 +18,10 @@ public class main {
 	      } else {
 	    	  eval.initialize(sc, userToken, runToken);
 	      }
-	      
-	      PSO algorithm = new PSO(eval);
-	      
-	      //GA algorithm = new GA(eval);
-	      algorithm.run(); // optional, name of method 'run' provided on submission
-	      // algorithm can also just use constructor
+	      for(int i = 0; i < 15; i++) {
+	    	  PSO algorithm = new PSO(eval);
+	      	algorithm.run();
+	      }
 	  }
       } catch (Exception e) {
           e.printStackTrace();
