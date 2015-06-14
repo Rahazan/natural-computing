@@ -1,6 +1,7 @@
 package pso;
 
 import org.dyn4j.dynamics.Body;
+import org.dyn4j.dynamics.Settings.ContinuousDetectionMode;
 import org.dyn4j.dynamics.World;
 import org.dyn4j.geometry.Rectangle;
 
@@ -16,6 +17,7 @@ public class WorldCreator {
 	public static void setupWorld(World world, WindFarmLayoutEvaluator evaluator) {
 		setupWalls(world, evaluator);
 		setupObstacles(world, evaluator);
+		world.getSettings().setContinuousDetectionMode(ContinuousDetectionMode.ALL);
 	}
 	
 	
@@ -23,7 +25,7 @@ public class WorldCreator {
 	 * Creates boundaries around the layout
 	 */
 	private static void setupWalls(World world, WindFarmLayoutEvaluator evaluator) {
-		double minDistance = 3.99 * evaluator.getTurbineRadius();
+		double minDistance = 4 * evaluator.getTurbineRadius();
 		
 		Body wallNorth = new Body();
 		Rectangle rectS = new Rectangle(evaluator.getFarmWidth(), 100);
@@ -52,12 +54,16 @@ public class WorldCreator {
 	}
 	
 	private static void setupObstacles(World world, WindFarmLayoutEvaluator evaluator) {
-		double minDistance = 4.0000 * evaluator.getTurbineRadius();
+		double minDistance = 3.975 * evaluator.getTurbineRadius();
+		
+		//Arbitrary high value that obstacles continue into the walls
 		double duzend = 1000;
 		
 		for (int o=0; o<evaluator.getObstacles().length; o++) {
     		double[] obs = evaluator.getObstacles()[o];
 
+    		//Necessary to close off small gap between obstacles and walls
+    		//That particles can slip through otherwise
 			double[] obsClone = obs.clone();
 			if (obsClone[0] < 1.0) obsClone[0] = -duzend;
 			if (obsClone[1] < 1.0) obsClone[1] = -duzend;
