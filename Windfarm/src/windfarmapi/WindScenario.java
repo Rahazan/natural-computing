@@ -1,5 +1,4 @@
 package windfarmapi;
-
 import java.io.File;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -125,20 +124,20 @@ public class WindScenario {
         minDist=64.0*R*R;
     }
 
-    public double getCosMidThetas(int thetIndex) {
+    double getCosMidThetas(int thetIndex) {
     	return coSinMidThetas[thetIndex][0];
     }
     
-    public double getSinMidThetas(int thetIndex) {
+    double getSinMidThetas(int thetIndex) {
     	return coSinMidThetas[thetIndex][1];
     }
 
     
-    public double getWblcdfVints(double c, int vintIndex, int ksIndex) {
+	double getWblcdfVints(double c, int vintIndex, int ksIndex) {
 		return wblcdfValues[(int)((c-cMin)/wblcdfAccuracy)*(vints.length+1)*ks.length+vintIndex*ks.length+ksIndex];
 	}
 
-    public double getWblcdfVrated(double c, int ksIndex) {
+	double getWblcdfVrated(double c, int ksIndex) {
 		return wblcdfValues[(int)((c-cMin)/wblcdfAccuracy)*(vints.length+1)*ks.length+vints.length*ks.length+ksIndex];
 
 	}

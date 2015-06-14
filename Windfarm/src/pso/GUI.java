@@ -10,8 +10,6 @@ import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import windfarmapi.WindScenario;
-
 public class GUI extends JPanel{
 	
 	private int width;
@@ -25,14 +23,14 @@ public class GUI extends JPanel{
 	private static int borderWidth = 10;
 	
 	
-	public GUI(WindScenario scenario)
+	public GUI(double width, double height, double[][] obstacles, double R)
 	{
 		super();
-		this.width = (int) (scenario.width/factor) + borderWidth; 
-		this.height = (int) (scenario.height/factor) + borderWidth;
-		this.obstacles = scenario.obstacles;
-		radius = (int)((scenario.R*8/2)/factor);
-		super.setPreferredSize(new Dimension(width,height));
+		this.width = (int) (width/factor) + borderWidth; 
+		this.height = (int) (height/factor) + borderWidth;
+		this.obstacles = obstacles;
+		radius = (int)((R*8/2)/factor);
+		super.setPreferredSize(new Dimension(this.width,this.height));
 		super.setBackground(Color.WHITE);
 		mainframe = new JFrame("Windfarm visualization");
 		mainframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
