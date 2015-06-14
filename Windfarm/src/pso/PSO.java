@@ -30,8 +30,8 @@ import windfarmapi.WindScenario;
 public class PSO {
 
     private WindFarmLayoutEvaluator evaluator;
-
     private World world;
+    private ParticleFactory particleFactory;
     
     private GUI gui;
 
@@ -54,6 +54,7 @@ public class PSO {
 		this.velocities = new ArrayList<Vector2>();
 		rand = new Random();
 		gui = new GUI(eval.getFarmWidth(), eval.getFarmHeight(), eval.getObstacles(), eval.getTurbineRadius());
+		particleFactory = new ParticleFactory(eval);
 		
 		// Physics engine
 		world = new World();
@@ -116,7 +117,7 @@ public class PSO {
 			
 			System.out.println("Evaluating " + i) ;
 			double score = 0.0;		
-			score = this.evaluate(particles);
+			//score = this.evaluate(particles);
 			
 			if (score != Double.MAX_VALUE && score != 0.0) { //Valid score?
 					
@@ -133,10 +134,7 @@ public class PSO {
 		        	int index = PSO.smallestIndex(turbineFitnesses);
 		        	System.out.println("Removing worst turbine with fitness " + turbineFitnesses[index]);
 		        	particles.remove(index);
-		        }
-		        else {
-		        	int index = PSO.smallestIndex(turbineFitnesses);
-		        	particles.get(index).newEval(particles.get(index).getScore()/100);
+		        	
 		        }
 				
 			}
@@ -212,7 +210,13 @@ public class PSO {
 		ArrayList<Particle> best = null;
 		
 		for(int i = 0 ; i < n_iter ; i++){
-			ArrayList<Particle> current = setupParticles(n);
+			ArrayList<Particle> current = new ArrayList<Particle>();
+			particleFactory.addParticles(current, n);
+			
+			if (n_iter == 1) { //No need to evaluate if not iterating
+				return current;
+			}
+			
 			double currentVal = evaluate(current);
 			n+=5;
 			if(currentVal <= min){
@@ -292,78 +296,6 @@ public class PSO {
 			bod.translate(obsClone[0]+0.5*width+minDistance ,obsClone[1]+0.5*height+minDistance );
 			world.addBody(bod);
     	}
-	}
-	
-	
-	private Particle createParticle(double x, double y) {
-		double minDistance = 4.035 * evaluator.getTurbineRadius();
-		
-		Particle party = new Particle();
-    	Circle circle = new Circle(minDistance);
-		party.addFixture(circle);
-		party.translate(x,y);
-		party.setMass(new Mass(new Vector2(), 200, 0.0));
-		BodyFixture fixture = party.getFixtures().get(0);
-		fixture.setRestitution(0.5);
-		fixture.setFriction(0.0);
-		
-		return party;
-	}
-	
-	
-	private ArrayList<Particle> setupParticles(int n){
-		double minDistance = 4.025 * evaluator.getTurbineRadius();
-		ArrayList<Particle> layout = new ArrayList<Particle>();
-		for (int i=0; i<n; i++) {
-			
-		    	Particle party = null;
-		    	boolean valid = false;
-		    	
-		    	
-		    	int nFailures = 0;
-		    	while(!valid) {
-		    		valid = true;
-		    		double x = rand.nextDouble()*evaluator.getFarmWidth();
-			    	double y = rand.nextDouble()*evaluator.getFarmHeight();
-			    	
-			    	party = createParticle(x,y);
-			    	
-		    		//Check whether particle is too close to other particles
-		    		for (Body otherParticle: layout) {
-		    			if(otherParticle.getTransform().getTranslation().distance(party.getTransform().getTranslation()) < minDistance*2) {
-		    				valid = false;
-		    				break;
-		    			}
-		    		}
-		    		
-		    		for (int o=0; o<evaluator.getObstacles().length; o++) {
-	            		double[] obs = evaluator.getObstacles()[o];
-	            		if (x>obs[0] && y>obs[1] && x<obs[2] && y<obs[3]) {
-	            			valid = false;
-	            			break;
-	            		}
-	            	}
-		    		
-		    		if (valid) {
-		    			layout.add(party);
-		    		}
-		    		else {
-		    			nFailures++;
-		    		}
-		    		
-		    		if (nFailures > 200) {
-				    	break;
-				    }
-				    	
-		    	}
-		    	
-		    	if (nFailures > 200) {
-			    	System.out.println(nFailures + " failures in randomply placing new particle,\nGiving up after " + i + " particles");
-			    	break;
-			    }
-	    	
-		}
-		return layout;
 	}
 	
 	private double evaluate(ArrayList<Particle> layout)
