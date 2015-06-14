@@ -129,7 +129,7 @@ public class PSO {
 		        }
 		        
 		        //Remove worst particle
-		        if(particles.size() > 80 && i %2 == 0) {
+		        if(particles.size() > 80 && i %40 == 0) {
 		        	int index = PSO.smallestIndex(turbineFitnesses);
 		        	System.out.println("Removing worst turbine with fitness " + turbineFitnesses[index]);
 		        	particles.remove(index);
