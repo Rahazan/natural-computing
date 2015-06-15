@@ -5,6 +5,7 @@ import java.util.Random;
 
 import org.dyn4j.dynamics.World;
 import org.dyn4j.geometry.Vector2;
+
 import windfarmapi.WindFarmLayoutEvaluator;
 
 public class PSO {
@@ -79,16 +80,32 @@ public class PSO {
 
 		System.out.println("Starting swarm with size: " + particles.size());
 		
-		for(int i = 0; i < 100; i++) {
+		for(int i = 0; i < 400; i++) {
 			
 			boolean validPositions = true;
 			
+			
+			
+			
 			//Multiple physics updates to be able to resolve more complex collisions
 			for(int updateCount = 0; updateCount < 80 || !validPositions; updateCount++) {
+				
+				
+				
 				this.world.update(0.1699);
 				updateVelocities();
 				gui.update(particles);
 				validPositions = this.evaluator.checkConstraint(particlesToLayout(particles));
+				
+				if(updateCount > 5000) { //Give up trying to resolve.. create new particles
+					System.out.println("REMOVING ALL PARTICLES, GIVING UP RESOLUTION");
+					for(Particle p: particles) {
+						world.removeBody(p);
+					}
+					particles.clear();
+					particleFactory.addParticles(particles, nParticles, world);
+					validPositions = true;
+				}
 			}
 			
 			
@@ -110,12 +127,32 @@ public class PSO {
 		        }
 		        
 		        //Remove worst particle
-		        if(particles.size() > 50 && i %15 == 0) {
-		        	int index = PSO.smallestIndex(turbineFitnesses);
-		        	System.out.println("Removing worst turbine with fitness " + turbineFitnesses[index]);
-		        	particles.remove(index);
+		        if(particles.size() > 50 && i%10 == 0) {
+		        	
+		        	@SuppressWarnings("unchecked")
+					ArrayList<Particle> sorted = (ArrayList<Particle>) particles.clone();
+		        	sorted.sort(new ParticleComparator());
+		        	
+		        	int removeNWorst = 8;
+		        	
+		        	System.out.println("Removing worst turbines");
+		        	for(int n = 0; n < removeNWorst; n++) {
+
+						world.removeBody(sorted.get(n));
+		        		particles.remove(sorted.get(n));
+		        	}
 		        	
 		        }
+		        
+		        if(particles.size() > 50 && i%5 == 0) {
+		     
+		        	int addN = 15;
+		      
+		        	System.out.println("Adding new turbines ");
+		        	particleFactory.addParticles(particles, addN, world);
+		        }
+		        
+		        
 				
 			}
 			

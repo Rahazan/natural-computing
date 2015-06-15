@@ -7,7 +7,7 @@ public class main {
   public static void main(String argv[]) {
       try {
 	  String userToken = new String("6YSEODYBB4XBTY332MARA0PUCZ0JG3");
-	  String runToken = new String("OCUAYFGN7Q78WFF7MPQVBF157WITFY");
+	  String runToken = null;//new String("OCUAYFGN7Q78WFF7MPQVBF157WITFY");
 	  for (int sc = 0; sc < 5; sc++) {
 	      // Create the competition evaluator
 	      CompetitionEvaluator eval = new CompetitionEvaluator();
@@ -18,9 +18,9 @@ public class main {
 	      } else {
 	    	  eval.initialize(sc, userToken, runToken);
 	      }
-	      for(int i = 0; i < 1; i++) {
+	      for(int i = 0; i < 2; i++) {
 	    	  PSO algorithm = new PSO(eval);
-	      	algorithm.run();
+	      		algorithm.run();
 	      }
 	  }
       } catch (Exception e) {

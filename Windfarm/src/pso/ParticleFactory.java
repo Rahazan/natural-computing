@@ -5,6 +5,7 @@ import java.util.Random;
 
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
+import org.dyn4j.dynamics.World;
 import org.dyn4j.geometry.Circle;
 import org.dyn4j.geometry.Mass;
 import org.dyn4j.geometry.Vector2;
@@ -26,10 +27,12 @@ public class ParticleFactory {
 		distanceTreshold = 0.05*maxPossibleDistance;
 	}
 	
-	
-
 	public void addParticles(ArrayList<Particle> particles, int n) {
-		double minDistance = 4.025 * evaluator.getTurbineRadius();
+		addParticles(particles, n, null);
+	}
+
+	public void addParticles(ArrayList<Particle> particles, int n, World world) {
+		double minDistance = 4.05 * evaluator.getTurbineRadius();
 		for (int i=0; i<n; i++) {
 			
 		    	Particle party = null;
@@ -62,6 +65,7 @@ public class ParticleFactory {
 		    		
 		    		if (valid) {
 		    			particles.add(party);
+		    			if (world != null) world.addBody(party);
 		    		}
 		    		else {
 		    			nFailures++;
