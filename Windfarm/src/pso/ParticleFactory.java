@@ -15,10 +15,15 @@ public class ParticleFactory {
 	
 	private WindFarmLayoutEvaluator evaluator;
 	private Random rand;
+	private double distanceTreshold = Double.MAX_VALUE;
+	private double maxPossibleDistance = 0.0;
+	
 
 	public ParticleFactory(WindFarmLayoutEvaluator evaluator) {
 		this.evaluator = evaluator;
 		rand = new Random();
+		maxPossibleDistance = Math.sqrt(Math.pow(evaluator.getFarmWidth(),2) +  Math.pow(evaluator.getFarmHeight(),2));
+		distanceTreshold = 0.05*maxPossibleDistance;
 	}
 	
 	
@@ -79,7 +84,7 @@ public class ParticleFactory {
 	private Particle createParticle(double x, double y) {
 		double minDistance = 4.035 * evaluator.getTurbineRadius();
 		
-		Particle party = new Particle();
+		Particle party = new Particle(distanceTreshold, maxPossibleDistance);
     	Circle circle = new Circle(minDistance);
 		party.addFixture(circle);
 		party.translate(x,y);

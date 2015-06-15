@@ -25,7 +25,7 @@ public class WorldCreator {
 	 * Creates boundaries around the layout
 	 */
 	private static void setupWalls(World world, WindFarmLayoutEvaluator evaluator) {
-		double minDistance = 4 * evaluator.getTurbineRadius();
+		double minDistance = 3 * evaluator.getTurbineRadius();
 		
 		Body wallNorth = new Body();
 		Rectangle rectS = new Rectangle(evaluator.getFarmWidth(), 100);
@@ -54,7 +54,7 @@ public class WorldCreator {
 	}
 	
 	private static void setupObstacles(World world, WindFarmLayoutEvaluator evaluator) {
-		double minDistance = 3.975 * evaluator.getTurbineRadius();
+		double minDistance = 3 * evaluator.getTurbineRadius();
 		
 		//Arbitrary high value that obstacles continue into the walls
 		double duzend = 1000;

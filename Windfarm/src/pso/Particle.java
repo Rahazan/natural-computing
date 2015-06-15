@@ -2,16 +2,26 @@ package pso;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.util.ArrayList;
 
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.geometry.Vector2;
 
 public class Particle extends Body{
 
-	private double[] bestPos;
+	private Vector2 bestPos;
 	private double bestScore;
-	private double score;
+	private double score = -1;
+	private double distanceTreshold = Double.MAX_VALUE;
+	private double maxPossibleDistance = 0.0;
+	private double personalCofidence = 0.5;
 	
+	
+	public Particle(double distanceTreshold, double maxPossibleDistance) {
+		this.distanceTreshold = distanceTreshold;
+		this.maxPossibleDistance = maxPossibleDistance;
+	}
+
 	public double getX(){
 		return this.transform.getTranslationX();
 	}
@@ -23,7 +33,7 @@ public class Particle extends Body{
 	public void newEval(double score){
 		if(this.bestScore < score){
 			this.bestScore = score;
-			this.bestPos = new double[]{this.getX(), this.getY()};
+			this.bestPos = new Vector2(this.getX(), this.getY());
 		}
 		this.score = score;
 	}
@@ -46,6 +56,48 @@ public class Particle extends Body{
 				
 	}
 	
+	
+	public void updateVelocity(ArrayList<Particle> particles, int index)
+	{
+
+		Vector2 repulsiveForce = new Vector2(0.0,0.0);
+		Vector2 resultingForce = new Vector2(0.0,0.0);
+//		Vector2 personalBestForce = new Vector2(0.0,0.0);
+		for(int i = 0 ; i < particles.size() ; i++) 
+		{
+			if(i!=index)
+			{
+				Particle part2 = particles.get(i);
+				Vector2 delta = getPosition().subtract(part2.getPosition());
+				double distance = delta.getMagnitude();
+				if (distance > distanceTreshold) {
+					continue;
+				}
+				
+				//Power to make closer particles weigh much higher
+				double forceScalar = Math.pow(1.0 - distance/this.maxPossibleDistance, 1.5) * 2500;
+				delta.normalize();
+				
+				repulsiveForce.add(delta.multiply(forceScalar));
+						
+			}
+				
+		}
+		
+		if(score!=-1)
+		{
+			Vector2 delta = this.getPosition().subtract(bestPos);
+			resultingForce.add(delta.multiply(personalCofidence));
+//			System.out.println("Personal force: " + resultingForce.toString() + " repulsiveForce: " + repulsiveForce.toString());
+		}
+		
+			//System.out.println(resultingForce);
+			resultingForce.add(repulsiveForce);
+			this.applyForce(resultingForce);
+	
+	}
+	
+
 	public double distanceTo(Particle party){
 		return Math.sqrt(Math.pow(this.getX()-party.getX(), 2) + Math.pow(this.getY()-party.getY(), 2));
 	}
