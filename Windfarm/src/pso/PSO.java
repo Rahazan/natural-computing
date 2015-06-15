@@ -79,7 +79,7 @@ public class PSO {
 
 		System.out.println("Starting swarm with size: " + particles.size());
 		
-		for(int i = 0; i < 200; i++) {
+		for(int i = 0; i < 100; i++) {
 			
 			boolean validPositions = true;
 			
@@ -125,41 +125,21 @@ public class PSO {
 	
 	
 	private void updateVelocities(){
+		double best = -1;
+		Vector2 bestPos = new Vector2(0,0);
+		for(Particle party : particles)
+		{
+			if(party.getScore() >= best)
+			{
+				best = party.getScore();
+				bestPos = party.getPosition();
+			}
+		}
+		
+		
 		for(int i = 0 ; i < particles.size() ; i++)
-			particles.get(i).updateVelocity(particles, i);
-//		for(int i = 0 ; i < particles.size() ; i++) {
-//			
-//			Particle part1 = particles.get(i);
-//			Vector2 repulsiveForce = new Vector2(0.0,0.0);
-//			Vector2 resultingForce = new Vector2(0.0,0.0);
-//			
-//			
-//			for(int j = 0 ; j < particles.size() ; j++)
-//			{
-//				if(i!=j)
-//				{
-//					Particle part2 = particles.get(j);
-//					Vector2 delta = part1.getPosition().subtract(part2.getPosition());
-//					double distance = delta.getMagnitude();
-//					if (distance > distanceTreshold) {
-//						continue;
-//					}
-//					
-//					//Power to make closer particles weigh much higher
-//					double forceScalar = Math.pow(1.0 - distance/this.maxPossibleDistance, 1.5) * 2500;
-//					
-//					delta.normalize();
-//					
-//					repulsiveForce.add(delta.multiply(forceScalar));
-//						
-//				}
-//				
-//			}
-//			//System.out.println(resultingForce);
-//			resultingForce = repulsiveForce;
-//			part1.applyForce(repulsiveForce);
-//		
-//		}
+			particles.get(i).updateVelocity(particles, i, bestPos);
+
 	}
 	
 	private ArrayList<Particle> findStartLayout(int n, int n_iter){

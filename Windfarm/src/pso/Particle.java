@@ -12,9 +12,10 @@ public class Particle extends Body{
 	private Vector2 bestPos;
 	private double bestScore;
 	private double score = -1;
-	private double distanceTreshold = Double.MAX_VALUE;
-	private double maxPossibleDistance = 0.0;
-	private double personalCofidence = 0.5;
+	private double distanceTreshold;
+	private double maxPossibleDistance;
+	private double personalConfidence = 0.5;
+	private double socialConfidence = 0.01;
 	
 	
 	public Particle(double distanceTreshold, double maxPossibleDistance) {
@@ -57,12 +58,12 @@ public class Particle extends Body{
 	}
 	
 	
-	public void updateVelocity(ArrayList<Particle> particles, int index)
+	public void updateVelocity(ArrayList<Particle> particles, int index, Vector2 globalBest)
 	{
 
 		Vector2 repulsiveForce = new Vector2(0.0,0.0);
 		Vector2 resultingForce = new Vector2(0.0,0.0);
-//		Vector2 personalBestForce = new Vector2(0.0,0.0);
+		Vector2 globalBestForce = new Vector2(0.0,0.0);
 		for(int i = 0 ; i < particles.size() ; i++) 
 		{
 			if(i!=index)
@@ -76,6 +77,7 @@ public class Particle extends Body{
 				
 				//Power to make closer particles weigh much higher
 				double forceScalar = Math.pow(1.0 - distance/this.maxPossibleDistance, 1.5) * 2500;
+				
 				delta.normalize();
 				
 				repulsiveForce.add(delta.multiply(forceScalar));
@@ -83,15 +85,20 @@ public class Particle extends Body{
 			}
 				
 		}
+		resultingForce.add(globalBestForce);
 		
 		if(score!=-1)
 		{
-			Vector2 delta = this.getPosition().subtract(bestPos);
-			resultingForce.add(delta.multiply(personalCofidence));
+			Vector2 delta = this.getPosition().subtract(this.bestPos);
+			resultingForce.add(delta.multiply(personalConfidence));
 //			System.out.println("Personal force: " + resultingForce.toString() + " repulsiveForce: " + repulsiveForce.toString());
 		}
 		
+		globalBestForce = this.getPosition().subtract(globalBestForce).multiply(socialConfidence);
+		
+		
 			//System.out.println(resultingForce);
+			
 			resultingForce.add(repulsiveForce);
 			this.applyForce(resultingForce);
 	
