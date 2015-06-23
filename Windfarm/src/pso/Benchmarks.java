@@ -49,7 +49,7 @@ public class Benchmarks {
 	    		double x = rand.nextDouble()*scenario.width;
 		    	double y = rand.nextDouble()*scenario.height;
 		    	
-		    	party = new Particle(0,0); //arguments should be different but who cares, we're not using this anyway
+		    	party = new Particle(0,0,0); //arguments should be different but who cares, we're not using this anyway
 		    	Circle circle = new Circle(minDistance);
     			party.addFixture(circle);
     			party.translate(x,y);

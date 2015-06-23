@@ -14,6 +14,7 @@ public class PSO {
     private World world;
     private ParticleFactory particleFactory;
     private Plotter plotter;
+    private double best;
     
     private GUI gui;
 
@@ -31,13 +32,14 @@ public class PSO {
     private double distanceTreshold = Double.MAX_VALUE;
     
 	
-	public PSO(WindFarmLayoutEvaluator eval) {
+	public PSO(WindFarmLayoutEvaluator eval, double personalConfidence) {
 		this.evaluator = eval;	
 		this.velocities = new ArrayList<Vector2>();
 		rand = new Random();
 		gui = new GUI(eval.getFarmWidth(), eval.getFarmHeight(), eval.getObstacles(), eval.getTurbineRadius());
-		particleFactory = new ParticleFactory(eval);
+		particleFactory = new ParticleFactory(eval, personalConfidence);
 		plotter = new Plotter();
+		this.best = 0;
 		
 		// Physics engine
 		world = new World();
@@ -58,12 +60,21 @@ public class PSO {
 		}
 	}
 
+	public void newBest(double score)
+	{
+		System.out.println("New best"); 
+		this.best = best;
+		for(Particle part : particles)
+			part.newGlobalBest();
+	}
+	
 	public void run(){
 		
 		System.out.println("Initializing particles") ;
 		particles = findStartLayout(nParticles ,1);
 		setupVelocities();
 		
+		newBest(0);
 		//setupMass();
 		
 		//Add particles to the physics world
@@ -80,11 +91,9 @@ public class PSO {
 
 		System.out.println("Starting swarm with size: " + particles.size());
 		
-		for(int i = 0; i < 400; i++) {
+		for(int i = 0; i < 300; i++) {
 			
 			boolean validPositions = true;
-			
-			
 			
 			
 			//Multiple physics updates to be able to resolve more complex collisions
@@ -113,7 +122,11 @@ public class PSO {
 			double score = 0.0;		
 			score = this.evaluate(particles);
 			
+			
+			
 			if (score != Double.MAX_VALUE && score != 0.0) { //Valid score?
+				if(score >= this.best)
+					newBest(score);
 					
 				plotter.addDataPoint(i,score*1000);
 				
@@ -127,13 +140,14 @@ public class PSO {
 		        }
 		        
 		        //Remove worst particle
+		        /*
 		        if(particles.size() > 50 && i%10 == 0) {
 		        	
 		        	@SuppressWarnings("unchecked")
 					ArrayList<Particle> sorted = (ArrayList<Particle>) particles.clone();
 		        	sorted.sort(new ParticleComparator());
 		        	
-		        	int removeNWorst = 8;
+		        	int removeNWorst = 20;
 		        	
 		        	System.out.println("Removing worst turbines");
 		        	for(int n = 0; n < removeNWorst; n++) {
@@ -146,11 +160,12 @@ public class PSO {
 		        
 		        if(particles.size() > 50 && i%5 == 0) {
 		     
-		        	int addN = 15;
+		        	int addN = 20;
 		      
 		        	System.out.println("Adding new turbines ");
 		        	particleFactory.addParticles(particles, addN, world);
 		        }
+		        */
 		        
 		        
 				

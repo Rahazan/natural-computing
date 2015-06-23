@@ -10,17 +10,21 @@ import org.dyn4j.geometry.Vector2;
 public class Particle extends Body{
 
 	private Vector2 bestPos;
+	private Vector2 globalBestPos;
 	private double bestScore;
 	private double score = -1;
 	private double distanceTreshold;
 	private double maxPossibleDistance;
 	private double personalConfidence = 0.5;
-	private double socialConfidence = 0.01;
+	private double socialConfidence = 0.5;
+	private double globalConfidence = 0.5;
 	
 	
-	public Particle(double distanceTreshold, double maxPossibleDistance) {
+	public Particle(double distanceTreshold, double maxPossibleDistance, double personalConfidence) {
 		this.distanceTreshold = distanceTreshold;
 		this.maxPossibleDistance = maxPossibleDistance;
+		this.personalConfidence = personalConfidence;
+		this.globalBestPos = getPosition();
 	}
 
 	public double getX(){
@@ -64,6 +68,7 @@ public class Particle extends Body{
 		Vector2 repulsiveForce = new Vector2(0.0,0.0);
 		Vector2 resultingForce = new Vector2(0.0,0.0);
 		Vector2 globalBestForce = new Vector2(0.0,0.0);
+		Vector2 bestPosForce = new Vector2(0.0,0.0);
 		for(int i = 0 ; i < particles.size() ; i++) 
 		{
 			if(i!=index)
@@ -85,8 +90,8 @@ public class Particle extends Body{
 			}
 				
 		}
-		resultingForce.add(globalBestForce);
 		
+		//personal best
 		if(score!=-1)
 		{
 			Vector2 delta = this.getPosition().subtract(this.bestPos);
@@ -94,7 +99,16 @@ public class Particle extends Body{
 //			System.out.println("Personal force: " + resultingForce.toString() + " repulsiveForce: " + repulsiveForce.toString());
 		}
 		
-		globalBestForce = this.getPosition().subtract(globalBestForce).multiply(socialConfidence);
+		//best layout
+		bestPosForce = getPosition().subtract(globalBestPos).multiply(globalConfidence); 
+		resultingForce.add(bestPosForce);
+				
+		//global best
+//		globalBestForce = this.getPosition().subtract(globalBest).multiply(socialConfidence);
+//		resultingForce.add(globalBestForce);
+		
+		
+		
 		
 		
 			//System.out.println(resultingForce);
@@ -115,6 +129,11 @@ public class Particle extends Body{
 	
 	public double getScore(){
 		return score;
+	}
+
+	public void newGlobalBest() {
+		this.globalBestPos = getPosition();
+		
 	}
 	
 	
