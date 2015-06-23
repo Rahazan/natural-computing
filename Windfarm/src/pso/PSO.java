@@ -8,8 +8,17 @@ import org.dyn4j.geometry.Vector2;
 
 import windfarmapi.WindFarmLayoutEvaluator;
 
+
+
+
 public class PSO {
 
+	public enum Action{
+		Nothing, //Do not remove or add particle
+		Remove, //Remove the worst particle
+		Add //Add a new particle (Attempt, may fail if no more fit)
+	}
+	
     private WindFarmLayoutEvaluator evaluator;
     private World world;
     private ParticleFactory particleFactory;
@@ -64,13 +73,11 @@ public class PSO {
 		particles = findStartLayout(nParticles ,1);
 		setupVelocities();
 		
-		//setupMass();
-		
 		//Add particles to the physics world
 		for(Particle party: particles)
 			world.addBody(party);
 		
-		System.out.println("Initializing velocities") ;
+		System.out.println("Initializing velocities");
 		
 		WorldCreator.setupWorld(world, evaluator);
 		
@@ -80,6 +87,12 @@ public class PSO {
 
 		System.out.println("Starting swarm with size: " + particles.size());
 		
+		//The score in the previous iteration
+		double previousScore = Double.MAX_VALUE;
+		
+		Action previousAction = Action.Nothing;
+		
+		
 		for(int i = 0; i < 400; i++) {
 			
 			boolean validPositions = true;
@@ -88,16 +101,17 @@ public class PSO {
 			
 			
 			//Multiple physics updates to be able to resolve more complex collisions
+			//But also enables for more movement to happen.
 			for(int updateCount = 0; updateCount < 80 || !validPositions; updateCount++) {
-				
-				
 				
 				this.world.update(0.1699);
 				updateVelocities();
 				gui.update(particles);
 				validPositions = this.evaluator.checkConstraint(particlesToLayout(particles));
 				
-				if(updateCount > 5000) { //Give up trying to resolve.. create new particles
+				//After 5000 timesteps in the physics world, give up resolution
+				//and start anew. This only happens very rarely.
+				if(updateCount > 5000) {
 					System.out.println("REMOVING ALL PARTICLES, GIVING UP RESOLUTION");
 					for(Particle p: particles) {
 						world.removeBody(p);
@@ -113,7 +127,7 @@ public class PSO {
 			double score = 0.0;		
 			score = this.evaluate(particles);
 			
-			if (score != Double.MAX_VALUE && score != 0.0) { //Valid score?
+			if (score != Double.MAX_VALUE && score != 0.0) { //Valid score
 					
 				plotter.addDataPoint(i,score*1000);
 				
@@ -126,32 +140,57 @@ public class PSO {
 		        	}
 		        }
 		        
-		        //Remove worst particle
-		        if(particles.size() > 50 && i%10 == 0) {
-		        	
-		        	@SuppressWarnings("unchecked")
-					ArrayList<Particle> sorted = (ArrayList<Particle>) particles.clone();
-		        	sorted.sort(new ParticleComparator());
-		        	
-		        	int removeNWorst = 8;
-		        	
-		        	System.out.println("Removing worst turbines");
-		        	for(int n = 0; n < removeNWorst; n++) {
-
-						world.removeBody(sorted.get(n));
-		        		particles.remove(sorted.get(n));
-		        	}
-		        	
+		        boolean scoreImproved = score < previousScore;
+		        previousScore = score;
+		        
+		        //Default is to repeat previous action
+		        Action action = previousAction;
+		        
+		        if (!scoreImproved) { //Switch action if score became wose
+			        switch(previousAction)  {
+			        	case Nothing:
+			        		//Random action
+			        		action = rand.nextBoolean() ? Action.Add : Action.Remove;
+			        		break;
+			        	case Add:
+			        		action = Action.Nothing;
+			        		break;
+			        	case Remove:
+			        		action = Action.Nothing;
+			        		break;
+			        }
 		        }
 		        
-		        if(particles.size() > 50 && i%5 == 0) {
-		     
-		        	int addN = 15;
-		      
-		        	System.out.println("Adding new turbines ");
-		        	particleFactory.addParticles(particles, addN, world);
+		        //Execute action
+		        switch(action)  {
+		        	case Nothing: //Do nothing
+		        		System.out.println("Not adding or removing particles");
+		        		
+		        		break;
+		        		
+		        	case Add: //Add new particle
+		        		
+		        		System.out.println("Adding new particle");
+		        		
+		        		particleFactory.addParticles(particles, 1, world);
+		        		break;
+		        		
+		        	case Remove: //Remove worst particle
+		        		
+		        		System.out.println("Removing worst particle");
+		        		
+		        		//Sort the particles by score
+		        		@SuppressWarnings("unchecked")
+						ArrayList<Particle> sorted = (ArrayList<Particle>) particles.clone();
+			        	sorted.sort(new ParticleComparator());
+			        	
+			        	//Remove the first (the worst)
+			        	world.removeBody(sorted.get(0));
+		        		particles.remove(sorted.get(0));
+		        		break;
 		        }
 		        
+		        previousAction = action;
 		        
 				
 			}
