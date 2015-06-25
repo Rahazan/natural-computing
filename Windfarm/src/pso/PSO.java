@@ -41,12 +41,12 @@ public class PSO {
     private double distanceTreshold = Double.MAX_VALUE;
     
 	
-	public PSO(WindFarmLayoutEvaluator eval, double personalConfidence) {
+	public PSO(WindFarmLayoutEvaluator eval) {
 		this.evaluator = eval;	
 		this.velocities = new ArrayList<Vector2>();
 		rand = new Random();
 		gui = new GUI(eval.getFarmWidth(), eval.getFarmHeight(), eval.getObstacles(), eval.getTurbineRadius());
-		particleFactory = new ParticleFactory(eval, personalConfidence);
+		particleFactory = new ParticleFactory(eval);
 		plotter = new Plotter();
 		this.best = 0;
 		
@@ -80,7 +80,7 @@ public class PSO {
 	public void run(){
 		
 		System.out.println("Initializing particles") ;
-		particles = findStartLayout(nParticles ,1);
+		particles = findStartLayout(nParticles ,100);
 		setupVelocities();
 		
 
@@ -101,7 +101,7 @@ public class PSO {
 
 		System.out.println("Starting swarm with size: " + particles.size());
 		
-		for(int i = 0; i < 300; i++) {
+		for(int i = 0; i < 400; i++) {
 
 		//The score in the previous iteration
 		double previousScore = Double.MAX_VALUE;
