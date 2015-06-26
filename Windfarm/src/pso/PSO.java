@@ -48,7 +48,7 @@ public class PSO {
 		gui = new GUI(eval.getFarmWidth(), eval.getFarmHeight(), eval.getObstacles(), eval.getTurbineRadius());
 		particleFactory = new ParticleFactory(eval);
 		plotter = new Plotter();
-		this.best = 0;
+		this.best = Double.MAX_VALUE;
 		
 		// Physics engine
 		world = new World();
@@ -81,10 +81,6 @@ public class PSO {
 		System.out.println("Initializing particles") ;
 		particles = findStartLayout(nParticles ,100);
 		setupVelocities();
-		
-
-		newBest(0);
-		//setupMass();
 	
 		//Add particles to the physics world
 		for(Particle party: particles)
