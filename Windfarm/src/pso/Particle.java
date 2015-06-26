@@ -21,8 +21,8 @@ public class Particle extends Body{
 	
 	//Confidence parameters
 	private static final double personalConfidence = 0.1;
-	private static final double globalConfidence = 0.5;
-	private static final double socialConfidence = 0.001;
+	private static final double globalConfidence = 0.1;
+	private static final double socialConfidence = 0.00001;
 	
 	
 	public Particle(double distanceTreshold, double maxPossibleDistance) {
@@ -89,7 +89,7 @@ public class Particle extends Body{
 				}
 				
 				//Power to make closer particles weigh much higher
-				double forceScalar = Math.pow(1.0 - distance/this.maxPossibleDistance, 1.5) * 2500;
+				double forceScalar = Math.pow(1.0 - distance/this.maxPossibleDistance, 1.5) * 250;
 				
 				delta.normalize();
 				
