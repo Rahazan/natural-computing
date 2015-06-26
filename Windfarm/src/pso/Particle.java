@@ -22,7 +22,7 @@ public class Particle extends Body{
 	//Confidence parameters
 	private static final double personalConfidence = 0.1;
 	private static final double globalConfidence = 0.5;
-	private static final double socialConfidence = 0.1;
+	private static final double socialConfidence = 0.02;
 	
 	
 	public Particle(double distanceTreshold, double maxPossibleDistance) {
