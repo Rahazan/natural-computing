@@ -9,7 +9,6 @@ import org.dyn4j.geometry.Vector2;
 
 /**
  * Represents a windmill.
- *
  */
 public class Particle extends Body{
 
@@ -19,10 +18,11 @@ public class Particle extends Body{
 	private double score = -1;
 	private double distanceTreshold;
 	private double maxPossibleDistance;
-	private double personalConfidence = 0.1;//0.1
-	private double globalConfidence = 0.5;//0.5
 	
-	private double socialConfidence = 0.3;
+	//Confidence parameters
+	private static final double personalConfidence = 0.1;
+	private static final double globalConfidence = 0.5;
+	private static final double socialConfidence = 0.1;
 	
 	
 	public Particle(double distanceTreshold, double maxPossibleDistance) {
