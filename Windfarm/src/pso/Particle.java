@@ -22,7 +22,7 @@ public class Particle extends Body{
 	//Confidence parameters
 	private static final double personalConfidence = 0.1;
 	private static final double globalConfidence = 0.5;
-	private static final double socialConfidence = 0.02;
+	private static final double socialConfidence = 0.001;
 	
 	
 	public Particle(double distanceTreshold, double maxPossibleDistance) {
@@ -104,7 +104,7 @@ public class Particle extends Body{
 		{
 			Vector2 delta = this.getPosition().subtract(this.bestPos);
 			resultingForce.add(delta.multiply(personalConfidence));
-			System.out.println("Personal force: " + resultingForce.toString() + " repulsiveForce: " + repulsiveForce.toString());
+			//System.out.println("Personal force: " + resultingForce.toString() + " repulsiveForce: " + repulsiveForce.toString());
 		}
 		
 		//best layout
