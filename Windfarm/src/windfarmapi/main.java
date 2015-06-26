@@ -7,7 +7,7 @@ public class main {
   public static void main(String argv[]) {
       try {
 	  String userToken = new String("6YSEODYBB4XBTY332MARA0PUCZ0JG3");
-	  String runToken = new String("MMIKB16VU3C6M5R60YKPA3CBW0M3RE");
+	  String runToken = null;//new String("0FCX36GA2X9YTCR5N6F53X3LQK1E7T");
 	  while(true)
 		  for (int sc = 0; sc < 5; sc++) {
 		      // Create the competition evaluator

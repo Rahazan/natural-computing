@@ -22,7 +22,7 @@ public class WorldCreator {
 	
 	
 	/**
-	 * Creates boundaries around the layout
+	 * Creates boundaries around the scenario in the physics world
 	 */
 	private static void setupWalls(World world, WindFarmLayoutEvaluator evaluator) {
 		double minDistance = 3 * evaluator.getTurbineRadius();
@@ -57,7 +57,7 @@ public class WorldCreator {
 		double minDistance = 3 * evaluator.getTurbineRadius();
 		
 		//Arbitrary high value that obstacles continue into the walls
-		double duzend = 1000;
+		double growIntoWallSize = 1000;
 		
 		for (int o=0; o<evaluator.getObstacles().length; o++) {
     		double[] obs = evaluator.getObstacles()[o];
@@ -65,10 +65,10 @@ public class WorldCreator {
     		//Necessary to close off small gap between obstacles and walls
     		//That particles can slip through otherwise
 			double[] obsClone = obs.clone();
-			if (obsClone[0] < 1.0) obsClone[0] = -duzend;
-			if (obsClone[1] < 1.0) obsClone[1] = -duzend;
-			if (obsClone[2] > evaluator.getFarmWidth()-1) obsClone[2] = evaluator.getFarmWidth()+duzend;
-			if (obsClone[3] > evaluator.getFarmHeight()-1) obsClone[3] = evaluator.getFarmHeight()+duzend;
+			if (obsClone[0] < 1.0) obsClone[0] = -growIntoWallSize;
+			if (obsClone[1] < 1.0) obsClone[1] = -growIntoWallSize;
+			if (obsClone[2] > evaluator.getFarmWidth()-1) obsClone[2] = evaluator.getFarmWidth()+growIntoWallSize;
+			if (obsClone[3] > evaluator.getFarmHeight()-1) obsClone[3] = evaluator.getFarmHeight()+growIntoWallSize;
 			
 			
 			Body bod = new Body();

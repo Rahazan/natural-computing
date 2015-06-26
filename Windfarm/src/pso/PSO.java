@@ -36,28 +36,23 @@ public class PSO {
     
     private ArrayList<Particle> particles;
     
-    //Diagonal of the scenario
-    private double maxPossibleDistance = 0.0;
-    
-    //Particles further away than this treshold will not influence eachother
-    private double distanceTreshold = Double.MAX_VALUE;
-    
-	
+
 	public PSO(WindFarmLayoutEvaluator eval) {
 		this.evaluator = eval;	
 		this.velocities = new ArrayList<Vector2>();
+		this.best = Double.MAX_VALUE;
+		particles = new ArrayList<Particle>();
+		
 		rand = new Random();
 		gui = new GUI(eval.getFarmWidth(), eval.getFarmHeight(), eval.getObstacles(), eval.getTurbineRadius());
 		particleFactory = new ParticleFactory(eval);
 		plotter = new Plotter();
-		this.best = Double.MAX_VALUE;
 		
-		// Physics engine
+		
+		// Create physics engine world
 		world = new World();
 		world.setGravity(new Vector2(0.0,0.0));
-		particles = new ArrayList<Particle>();
-		maxPossibleDistance = Math.sqrt(Math.pow(eval.getFarmWidth(),2) +  Math.pow(eval.getFarmHeight(),2));
-		distanceTreshold = 0.05 * maxPossibleDistance;
+		
 	}
 
 	private void setupVelocities() {
@@ -81,7 +76,7 @@ public class PSO {
 	public void run(){
 		
 		System.out.println("Initializing particles") ;
-		particles = findStartLayout(nParticles ,10);
+		particles = findStartLayout(nParticles ,100);
 		setupVelocities();
 	
 		//Add particles to the physics world
@@ -90,46 +85,29 @@ public class PSO {
 		
 		System.out.println("Initializing velocities");
 		
+		//Add obstacles and boundaries to the physics world
 		WorldCreator.setupWorld(world, evaluator);
 		
+		//Random start velocity
 		for (int i = 0; i < particles.size(); i++) {
 			particles.get(i).setLinearVelocity(velocities.get(i));
 		}
 
 		System.out.println("Starting swarm with size: " + particles.size());
 		
-		for(int i = 0; i < 400; i++) {
-
 		//The score in the previous iteration
 		double previousScore = Double.MAX_VALUE;
-		
 		Action previousAction = Action.Nothing;
 		
+		
+		for(int i = 0; i < 400; i++) {
 			
-			boolean validPositions = true;
-			
-			
-			//Multiple physics updates to be able to resolve more complex collisions
-			//But also enables for more movement to happen.
-			for(int updateCount = 0; updateCount < 80 || !validPositions; updateCount++) {
-				
-				this.world.update(0.1699);
-				updateVelocities();
-				gui.update(particles);
-				validPositions = this.evaluator.checkConstraint(particlesToLayout(particles));
-				
-				//After 5000 timesteps in the physics world, give up resolution
-				//and start anew. This only happens very rarely.
-				if(updateCount > 5000) {
-					System.out.println("REMOVING ALL PARTICLES, GIVING UP RESOLUTION");
-					for(Particle p: particles) {
-						world.removeBody(p);
-					}
-					particles.clear();
-					particleFactory.addParticles(particles, nParticles, world);
-					validPositions = true;
-				}
-			}
+			/**
+			 * Calculates velocity,
+			 * Updates particles' velocity
+			 * Calls physics world update multiple times
+			 */
+			physicsUpdate();
 			
 			
 			System.out.println("Evaluating " + i) ;
@@ -156,7 +134,7 @@ public class PSO {
 		        }
 		        
 		        boolean scoreImproved = score < previousScore;
-		        previousScore = score;
+		        
 		        
 		        //Default is to repeat previous action
 		        Action action = previousAction;
@@ -207,12 +185,42 @@ public class PSO {
 		        }
 		        
 		        previousAction = action;
+		        previousScore = score;
 		        
 				
 			}
 			
 		}
 		
+	}
+
+	/**
+	 * Updates the physics world times
+	 */
+	private void physicsUpdate() {
+		boolean validPositions = true;
+		
+		//Multiple physics updates to be able to resolve more complex collisions
+		//But also enables for more movement to happen.
+		for(int updateCount = 0; updateCount < 80 || !validPositions; updateCount++) {
+			
+			this.world.update(0.1699); //1/60th of a second, common update step length for games
+			updateVelocities();
+			gui.update(particles);
+			validPositions = this.evaluator.checkConstraint(particlesToLayout(particles));
+			
+			//After 5000 timesteps in the physics world, give up resolution
+			//and start anew. This only happens very rarely.
+			if(updateCount > 5000) {
+				System.out.println("REMOVING ALL PARTICLES, GIVING UP RESOLUTION");
+				for(Particle p: particles) {
+					world.removeBody(p);
+				}
+				particles.clear();
+				particleFactory.addParticles(particles, nParticles, world);
+				validPositions = true;
+			}
+		}
 	}
 	
 	

@@ -76,6 +76,7 @@ public class Particle extends Body{
 		Vector2 resultingForce = new Vector2(0.0,0.0);
 		Vector2 globalBestForce = new Vector2(0.0,0.0);
 		Vector2 bestPosForce = new Vector2(0.0,0.0);
+		
 		for(int i = 0 ; i < particles.size() ; i++) 
 		{
 			if(i!=index)
@@ -103,7 +104,7 @@ public class Particle extends Body{
 		{
 			Vector2 delta = this.getPosition().subtract(this.bestPos);
 			resultingForce.add(delta.multiply(personalConfidence));
-//			System.out.println("Personal force: " + resultingForce.toString() + " repulsiveForce: " + repulsiveForce.toString());
+			System.out.println("Personal force: " + resultingForce.toString() + " repulsiveForce: " + repulsiveForce.toString());
 		}
 		
 		//best layout
@@ -111,18 +112,13 @@ public class Particle extends Body{
 		resultingForce.add(bestPosForce);
 				
 		//global best
-		//globalBestForce = this.getPosition().subtract(globalBest).multiply(socialConfidence);
 		globalBestForce = globalBest.subtract(getPosition()).multiply(socialConfidence);
 		resultingForce.add(globalBestForce);
-//		
 		
-		
-		
-		
-			//System.out.println(resultingForce);
-			
-			resultingForce.add(repulsiveForce);
-			this.applyForce(resultingForce);
+		//Apply the resulting force
+		//System.out.println(resultingForce);
+		resultingForce.add(repulsiveForce);
+		this.applyForce(resultingForce);
 	
 	}
 	
