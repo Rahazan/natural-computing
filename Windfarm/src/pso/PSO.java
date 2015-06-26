@@ -141,9 +141,9 @@ public class PSO {
 					this.best = score;
 				}
 
-					
 				plotter.addDataPoint(i,score*1000);
 				
+				//Get individual fitness from evaluator, update particles with this fitness
 				double[] turbineFitnesses = evaluator.getTurbineFitnesses();
 		        for(int q = 0; q < turbineFitnesses.length; q++) {
 		        	if(q < particles.size())
@@ -159,7 +159,8 @@ public class PSO {
 		        //Default is to repeat previous action
 		        Action action = previousAction;
 		        
-		        if (!scoreImproved) { //Switch action if score became wose
+		        //Switch action if score became worse
+		        if (!scoreImproved) { 
 			        switch(previousAction)  {
 			        	case Nothing:
 			        		//Random action

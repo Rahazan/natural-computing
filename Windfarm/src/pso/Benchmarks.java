@@ -10,6 +10,14 @@ import org.dyn4j.geometry.Circle;
 import windfarmapi.KusiakLayoutEvaluator;
 import windfarmapi.WindScenario;
 
+
+/**
+ * 
+ * This class contains various benchmarks, please disregard.
+ * It was used for ad-hoc benchmarking various approaches.
+ *
+ */
+
 public class Benchmarks {
 
 	Random rand = new Random();

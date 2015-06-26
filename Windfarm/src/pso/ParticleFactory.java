@@ -12,25 +12,48 @@ import org.dyn4j.geometry.Vector2;
 
 import windfarmapi.WindFarmLayoutEvaluator;
 
+
+/**
+ * Creates particles and adds these to the (physics) world
+ *
+ */
 public class ParticleFactory {
 	
+	private static final int N_PLACE_RETRY = 200;
+	private static final double THRESHOLD_DIAGONAL_RATIO = 0.05;
 	private WindFarmLayoutEvaluator evaluator;
 	private Random rand;
-	private double distanceTreshold = Double.MAX_VALUE;
-	private double maxPossibleDistance = 0.0;
 	
+	/**
+	 * The threshold above which particles do not interact with eachother.
+	 * (Initialized in constructor)
+	 */
+	private double distanceTreshold = Double.MAX_VALUE;
+	
+	/**
+	 * The diagonal of the scenario
+	 */
+	private double maxPossibleDistance;
+
 
 	public ParticleFactory(WindFarmLayoutEvaluator evaluator ) {
 		this.evaluator = evaluator;
 		rand = new Random();
+		
+		// Calculate diagonal of the scenario
 		maxPossibleDistance = Math.sqrt(Math.pow(evaluator.getFarmWidth(),2) +  Math.pow(evaluator.getFarmHeight(),2));
-		distanceTreshold = 0.05*maxPossibleDistance;
+		distanceTreshold = THRESHOLD_DIAGONAL_RATIO*maxPossibleDistance;
 	}
 	
 	public void addParticles(ArrayList<Particle> particles, int n) {
 		addParticles(particles, n, null);
 	}
 
+	/**
+	 * Attempt to add n particles to the world.
+	 * Will attempt to randomly place particle N_PLACE_RETRY times
+	 * In case of failure gives up.
+	 */
 	public void addParticles(ArrayList<Particle> particles, int n, World world) {
 		double minDistance = 4.05 * evaluator.getTurbineRadius();
 		for (int i=0; i<n; i++) {
@@ -55,6 +78,7 @@ public class ParticleFactory {
 		    			}
 		    		}
 		    		
+		    		//Check whether particle is in obstacle
 		    		for (int o=0; o<evaluator.getObstacles().length; o++) {
 	            		double[] obs = evaluator.getObstacles()[o];
 	            		if (x>obs[0] && y>obs[1] && x<obs[2] && y<obs[3]) {
@@ -71,20 +95,23 @@ public class ParticleFactory {
 		    			nFailures++;
 		    		}
 		    		
-		    		if (nFailures > 200) {
+		    		if (nFailures > N_PLACE_RETRY) {
 				    	break;
 				    }
 				    	
 		    	}
 		    	
-		    	if (nFailures > 200) {
-			    	System.out.println(nFailures + " failures in randomply placing new particle,\nGiving up after " + i + " particles");
+		    	if (nFailures > N_PLACE_RETRY) {
+			    	System.out.println(nFailures + " failures in randomly placing new particle,\nGiving up after " + i + " particles");
 			    	break;
 			    }
 	    	
 		}
 	}
 	
+	/**
+	 * Create particle and it's rigid body at given x, y
+	 */
 	private Particle createParticle(double x, double y) {
 		double minDistance = 4.035 * evaluator.getTurbineRadius();
 		

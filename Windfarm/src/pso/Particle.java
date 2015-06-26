@@ -7,6 +7,10 @@ import java.util.ArrayList;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.geometry.Vector2;
 
+/**
+ * Represents a windmill.
+ *
+ */
 public class Particle extends Body{
 
 	private Vector2 bestPos;
@@ -41,6 +45,9 @@ public class Particle extends Body{
 		this.score = score;
 	}
 	
+	/**
+	 * Draw particle to given graphics context
+	 */
 	public void draw(Graphics2D g2, double factor, int borderWidth, int radius, int radiusS, double highest, double lowest){
 		g2.setColor(setColor(highest, lowest));
 		int x = (int)(this.getX()/factor + borderWidth/2);

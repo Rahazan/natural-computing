@@ -2,6 +2,10 @@ package pso;
 
 import java.util.Comparator;
 
+/**
+ * Compares the fitness of two particles
+ *
+ */
 public class ParticleComparator implements Comparator<Particle> {
 
 	@Override

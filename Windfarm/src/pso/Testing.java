@@ -10,7 +10,10 @@ import windfarmapi.WindScenario;
 
 public class Testing {
 	
-
+	/**
+	 * Ad-hoc class created for testing various strategies (such as the example GA).
+	 * Not used in PSO algorithm, please disregard.
+	 */
 	public void testGA() throws Exception
 	{
 		String filepath = "./Scenarios/";

@@ -1,5 +1,9 @@
 package pso;
 
+/**
+ * Data structure that wraps an evaluation of a certain amount of turbines
+ *
+ */
 public class LayoutNumberPair {
 	
 	private int nr_turbines;
