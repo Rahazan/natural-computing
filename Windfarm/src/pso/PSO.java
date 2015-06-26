@@ -72,7 +72,6 @@ public class PSO {
 	public void newBest(double score)
 	{
 		System.out.println("New best"); 
-		this.best = best;
 		for(Particle part : particles)
 			part.newGlobalBest();
 	}
@@ -141,8 +140,10 @@ public class PSO {
 			
 			
 			if (score != Double.MAX_VALUE && score != 0.0) { //Valid score?
-				if(score >= this.best)
+				if(score <= this.best) {
 					newBest(score);
+					this.best = score;
+				}
 
 					
 				plotter.addDataPoint(i,score*1000);
@@ -283,20 +284,6 @@ public class PSO {
         
         
         return fitness;
-	}
-	
-	
-    public static int smallestIndex (double[] array) {
-    	double currentValue = array[0]; 
-    	int smallestIndex = 0;
-		for (int j=1; j < array.length; j++) {
-			if (array[j] < currentValue) {
-				currentValue = array[j];
-				smallestIndex = j;
-			}
-		}
-		
-		return smallestIndex;
 	}
 	
 

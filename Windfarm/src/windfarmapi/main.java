@@ -12,7 +12,7 @@ public class main {
 		  for (int sc = 0; sc < 5; sc++) {
 		      // Create the competition evaluator
 		      CompetitionEvaluator eval = new CompetitionEvaluator();
-		      // initialize the evalutor with the scenario id (from 0 to 4), with you user token (see you account online) and the run token. For the first run, ommit the run token, the server will send you (and display) a new one. This run token can be recovered with the getRunToken() method from CompetitionEvaluator
+		      // initialize the evaluator with the scenario id (from 0 to 4), with you user token (see you account online) and the run token. For the first run, ommit the run token, the server will send you (and display) a new one. This run token can be recovered with the getRunToken() method from CompetitionEvaluator
 		      if (sc == 0 && runToken == null) {
 				  eval.initialize(sc, userToken);
 				  runToken = eval.getRunToken();
@@ -20,6 +20,7 @@ public class main {
 		    	  eval.initialize(sc, userToken, runToken);
 		      }
 		      
+		      //Create PSO
 	    	  PSO algorithm = new PSO(eval);
 	    	  algorithm.run();
 	
