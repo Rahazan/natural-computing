@@ -22,6 +22,8 @@ public class Particle extends Body{
 	private double personalConfidence = 0.1;//0.1
 	private double globalConfidence = 0.5;//0.5
 	
+	private double socialConfidence = 0.3;
+	
 	
 	public Particle(double distanceTreshold, double maxPossibleDistance) {
 		this.distanceTreshold = distanceTreshold;
@@ -109,8 +111,9 @@ public class Particle extends Body{
 		resultingForce.add(bestPosForce);
 				
 		//global best
-//		globalBestForce = this.getPosition().subtract(globalBest).multiply(socialConfidence);
-//		resultingForce.add(globalBestForce);
+		//globalBestForce = this.getPosition().subtract(globalBest).multiply(socialConfidence);
+		globalBestForce = globalBest.subtract(getPosition()).multiply(socialConfidence);
+		resultingForce.add(globalBestForce);
 //		
 		
 		

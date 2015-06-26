@@ -28,6 +28,8 @@ public class PSO {
     private GUI gui;
 
     private ArrayList<Vector2> velocities;
+    
+    //A very high value means that as many particles as possible will be added
     private final int nParticles = 13337;
     private final double maxStartVelocity = 1000.0;
     private Random rand;
@@ -79,7 +81,7 @@ public class PSO {
 	public void run(){
 		
 		System.out.println("Initializing particles") ;
-		particles = findStartLayout(nParticles ,100);
+		particles = findStartLayout(nParticles ,10);
 		setupVelocities();
 	
 		//Add particles to the physics world
